@@ -1,0 +1,1197 @@
+<!doctype html><html lang="ru"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>Life OS Аброра</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Life OS">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#F1F4F8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B1019" media="(prefers-color-scheme: dark)">
+<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Onest:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
+</head><body>
+<style>
+/* Layout: one phone-first column, sticky header, fixed bottom tab bar; colour taken from articulating paper — blue for progress, red for spending */
+:root{
+  --bg:#F1F4F8; --surface:#FFFFFF; --sunk:#E6ECF3; --line:#D5DDE8; --fg:#0F1B2D; --muted:#5A6A80;
+  --accent:#2C4ED4; --accent-ink:#FFFFFF; --accent-soft:#E2E8FF;
+  --red:#CF3349; --red-soft:#FBE3E7; --good:#1C8455; --good-soft:#DCF2E6; --warn:#A86E12; --warn-soft:#FAEFD8;
+  --scrim:rgba(12,18,30,.45);
+  --font-display:"Unbounded","Onest",system-ui,sans-serif;
+  --font-body:"Onest",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0B1019; --surface:#131A26; --sunk:#1A2332; --line:#263145; --fg:#E6EBF4; --muted:#8B99AF;
+  --accent:#7090FF; --accent-ink:#0B1019; --accent-soft:#1B2752;
+  --red:#FF6B80; --red-soft:#3A1820; --good:#4CC38A; --good-soft:#10301F; --warn:#E5B04A; --warn-soft:#33270F;
+  --scrim:rgba(0,0,0,.6); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0B1019; --surface:#131A26; --sunk:#1A2332; --line:#263145; --fg:#E6EBF4; --muted:#8B99AF;
+  --accent:#7090FF; --accent-ink:#0B1019; --accent-soft:#1B2752;
+  --red:#FF6B80; --red-soft:#3A1820; --good:#4CC38A; --good-soft:#10301F; --warn:#E5B04A; --warn-soft:#33270F;
+  --scrim:rgba(0,0,0,.6); color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.app{max-width:680px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 calc(96px + env(safe-area-inset-bottom,0px))}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;align-items:center;gap:12px;padding-block:14px 10px}
+.top h1{font-family:var(--font-display);font-weight:700;font-size:20px;letter-spacing:-.01em;margin:0;flex:1;min-width:0}
+.top .who{font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.icon-btn{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:12px;border:1px solid var(--line);background:var(--surface)}
+.icon-btn svg{width:18px;height:18px}
+main{display:grid;gap:24px}
+.banner{font-size:13px;padding:10px 12px;border-radius:12px;background:var(--warn-soft);color:var(--fg);border:1px solid var(--line)}
+.sec{display:grid;gap:10px;min-width:0}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.sec-h h2{margin:0;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.meta{font-size:13px;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;min-width:0}
+.num{font-variant-numeric:tabular-nums}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.pos{color:var(--good)} .neg{color:var(--red)}
+
+/* hero */
+.hero{background:var(--accent);color:var(--accent-ink);border-radius:20px;padding:18px;display:grid;grid-template-columns:1fr auto;gap:6px 14px;align-items:center}
+.hero .lvl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+.hero .title{font-family:var(--font-display);font-weight:700;font-size:24px;line-height:1.15;text-wrap:balance}
+.hero .sub{font-size:13px;opacity:.9}
+.hero .arch{grid-row:1/4;grid-column:2;width:132px;max-width:100%}
+.hero .stats{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.hero .pill{background:color-mix(in srgb,var(--accent-ink) 16%,transparent);border-radius:999px;padding:5px 11px;font-size:13px;font-weight:500}
+
+/* chips & buttons */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-weight:500;font-size:14px}
+.chip.in::before,.chip.out::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--good)}
+.chip.out::before{background:var(--red)}
+.chip.ghost{background:transparent;border-style:dashed}
+.chip.sel{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-weight:600}
+.btn.sm{padding:6px 10px;font-size:13px;border-radius:10px;white-space:nowrap}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);width:100%;padding:13px}
+.btn.wide{width:100%}
+.danger{color:var(--red)}
+
+/* lists */
+.list{display:grid;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.list>*+*{border-top:1px solid var(--line)}
+.row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:none;border:0;text-align:left;width:100%;min-width:0}
+.row .grow,.item .grow{flex:1;min-width:0}
+.row .t,.item .t{font-weight:500;overflow-wrap:anywhere}
+.check .box{width:22px;height:22px;border-radius:7px;border:2px solid var(--line);flex:none;display:grid;place-items:center}
+.check.on .box{background:var(--good);border-color:var(--good)}
+.check.on .box::after{content:"";width:10px;height:6px;border:2px solid var(--surface);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+.check.on .t,.check.on .grow{color:var(--muted)}
+.xp{font-family:var(--font-mono);font-size:12px;color:var(--accent);font-weight:600;white-space:nowrap}
+.item{display:flex;align-items:center;gap:10px;padding:12px 14px;min-width:0}
+.time{font-family:var(--font-mono);font-size:13px;color:var(--muted);width:46px;flex:none}
+.tag{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;padding:2px 7px;border-radius:6px;background:var(--sunk);color:var(--muted);white-space:nowrap}
+.tag.money{background:var(--good-soft);color:var(--good)} .tag.practice{background:var(--accent-soft);color:var(--accent)}
+.tag.brand{background:var(--warn-soft);color:var(--warn)} .tag.body{background:var(--red-soft);color:var(--red)}
+.tag.debt{background:var(--red-soft);color:var(--red)}
+.empty{padding:16px 14px;color:var(--muted);font-size:14px}
+.x-btn{border:0;background:none;color:var(--muted);font-size:18px;line-height:1;padding:6px 8px;border-radius:8px;flex:none}
+.x-btn.armed{color:var(--red);font-size:12px;font-weight:600;background:var(--red-soft)}
+
+/* tiles */
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;min-width:0}
+.tile .k{font-size:12px;color:var(--muted)}
+.tile .v{font-family:var(--font-display);font-weight:500;font-size:19px;font-variant-numeric:tabular-nums;margin-top:2px;overflow-wrap:anywhere}
+.tile .s{font-size:12px;color:var(--muted);margin-top:2px}
+button.tile,button.card,button.hb{font:inherit;color:inherit;text-align:left;width:100%;cursor:pointer}
+button.hero{font:inherit;text-align:left;width:100%;cursor:pointer;border:0}
+button.tile:hover,button.card:hover{border-color:var(--accent)}
+button.tile .k{display:flex;justify-content:space-between;gap:6px}
+button.tile .k::after,.tap-hint::after{content:"›";color:var(--accent);font-weight:700;font-size:16px;line-height:1}
+button.hb{background:none;border:0;padding:4px 0;border-radius:8px}
+button.hb .l span:last-child::after{content:" ›";color:var(--accent);font-weight:700}
+.linkbtn{font:inherit;color:var(--accent);background:none;border:0;padding:0;text-align:left;cursor:pointer;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+.formula{background:var(--sunk);border-radius:12px;padding:12px 14px;display:grid;gap:7px;font-size:14px}
+.frow{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.frow>:first-child{min-width:0;overflow-wrap:anywhere}
+.frow .num{white-space:nowrap}
+.frow.total{border-top:1px solid var(--line);padding-top:8px;font-weight:600}
+.frow.total .num{font-family:var(--font-display);font-weight:500;font-size:20px}
+.amt{text-align:right;flex:none}
+.lvl-row.on{background:var(--accent-soft)}
+.bar{height:8px;border-radius:99px;background:var(--sunk);overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.bar.red>i{background:var(--red)} .bar.good>i{background:var(--good)}
+.hbars{display:grid;gap:10px}
+.hb{display:grid;gap:4px}
+.hb .l{display:flex;justify-content:space-between;gap:10px;font-size:14px}
+.hb .l span:first-child{min-width:0;overflow-wrap:anywhere}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px 6px;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left;white-space:normal}
+th{font-size:12px;color:var(--muted);font-weight:500;border-bottom:1px solid var(--line)}
+tr+tr td{border-top:1px solid var(--line)}
+.month-sw{display:flex;align-items:center;gap:8px}
+.month-sw b{min-width:120px;text-align:center;font-weight:600;text-transform:capitalize}
+.dayhead{padding:8px 14px;font-size:12px;color:var(--muted);background:var(--sunk);font-weight:600}
+.phase{display:grid;gap:8px}
+.phase-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.phase-h b{font-family:var(--font-display);font-weight:500;font-size:15px}
+.big{font-family:var(--font-display);font-weight:700;font-size:44px;line-height:1;font-variant-numeric:tabular-nums}
+.spark{width:100%;height:auto;display:block}
+.note{font-size:13px;color:var(--muted);line-height:1.5}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.badge{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--surface);min-width:0}
+.badge b{display:block;font-size:13px}
+.badge span{font-size:12px;color:var(--muted)}
+.badge.off{opacity:.45;border-style:dashed}
+.badge.on{border-color:var(--accent);background:var(--accent-soft)}
+
+/* nav */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:8;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px))}
+.tabs .in{max-width:680px;margin:0 auto;display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.tabs button{border:0;background:none;display:grid;justify-items:center;gap:3px;padding:9px 1px 8px;font-size:10.5px;color:var(--muted);font-weight:500;min-width:0;overflow:hidden;white-space:nowrap}
+.pt th,.pt td{padding:10px 6px}
+.pt th:first-child,.pt td:first-child{padding-left:14px}
+.pt th:last-child,.pt td:last-child{padding-right:14px}
+.pt tbody tr{cursor:pointer}
+.pt tbody tr:hover td{background:var(--sunk)}
+.pt .pn{font:inherit;font-weight:600;color:var(--fg);background:none;border:0;padding:0;text-align:left;cursor:pointer;overflow-wrap:anywhere}
+.pt .pc{font-size:12px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:normal;margin-top:2px}
+.pt tfoot td{border-top:1px solid var(--line);font-weight:600}
+.pt .ok{color:var(--good);font-weight:600}
+#pat-q{font-size:16px}
+.pt th:first-child,.pt td:first-child{position:sticky;left:0;z-index:1;background:var(--surface);min-width:150px;max-width:180px;box-shadow:1px 0 0 var(--line)}
+.pt tbody tr:hover td:first-child{background:var(--sunk)}
+.pt .mine{color:var(--accent);font-weight:600}
+.split{font-family:var(--font-mono);font-size:13px;color:var(--accent);line-height:1.5}
+.tabs button svg{width:22px;height:22px}
+.tabs button.on{color:var(--accent)}
+
+/* sheet */
+.wrap{position:fixed;inset:0;z-index:20;background:var(--scrim);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:100%;max-width:680px;max-height:90%;overflow:auto;border-radius:20px 20px 0 0;padding-block:16px calc(20px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.sheet form{display:grid;gap:12px}
+.sheet-h{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sheet-h h3{margin:0;font-family:var(--font-display);font-weight:500;font-size:18px}
+label.f{display:grid;gap:5px;font-size:13px;color:var(--muted);font-weight:500;min-width:0}
+input,select,textarea{font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg);width:100%;min-width:0}
+textarea{min-height:110px;font-size:14px;line-height:1.5}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg label{flex:1;min-width:0}
+.seg input{position:absolute;opacity:0;width:1px;height:1px}
+.seg span{display:block;text-align:center;padding:9px 6px;border:1px solid var(--line);border-radius:10px;font-weight:600;font-size:14px;color:var(--fg)}
+.seg input:checked+span{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.seg input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.cb{display:flex;gap:10px;align-items:center;font-size:14px;color:var(--fg)}
+.cb input{width:20px;height:20px;flex:none}
+.preview{font-family:var(--font-mono);font-size:13px;color:var(--accent);min-height:18px}
+.ex{display:grid;gap:6px;padding:10px 0;border-top:1px solid var(--line)}
+.ex .reps{display:flex;gap:6px;flex-wrap:wrap}
+.ex .reps input{width:56px;text-align:center;padding:8px 4px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--fg);color:var(--bg);padding:9px 14px;border-radius:10px;font-size:14px;max-width:calc(100% - 32px)}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .18s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}}}
+/* web-app additions: calendar link styled as a button, sheets scroll without dragging the page behind them */
+a.btn{text-decoration:none;color:inherit} a.btn.primary{color:var(--accent-ink)}
+.sheet{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.more{display:grid;gap:12px;margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}
+.more h2{margin:0;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div style="flex:1;min-width:0"><div class="who">Аброр · Life OS</div><h1 id="ttl">Сегодня</h1></div>
+    <button class="icon-btn" data-act="settings" aria-label="Настройки"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></button>
+  </header>
+  <main id="main"><div class="empty">Загружаю…</div></main>
+</div>
+<nav class="tabs" aria-label="Разделы"><div class="in" id="tabs"></div></nav>
+<div class="wrap" id="wrap" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ---------- constants ---------- */
+const AREAS={money:'Финансы',practice:'Практика',brand:'Бренд',body:'Тело'};
+const ORDER_ST=[['new','Принят'],['model','Моделирование'],['print','Печать'],['done','Сдан'],['paid','Оплачен']];
+const CONTENT_ST=[['idea','Идея'],['draft','Черновик'],['ready','Готово'],['pub','Опубликовано']];
+const CH={ig:'Instagram',tg:'Telegram',yt:'YouTube',web:'Вебинар',book:'Книга'};
+const CONTENT_XP={ig:25,tg:25,yt:80,web:200,book:150};
+const LEVELS=[[0,'Студент'],[300,'Интерн'],[800,'Ординатор'],[1600,'Ортодонт'],[3000,'Цифровой ортодонт'],[5000,'Эксперт'],[8000,'Лектор'],[12000,'Лидер мнений']];
+const PHASES=[{n:1,t:'Учёт и турник',w:'Недели 1–2'},{n:2,t:'Заказы, прайс, долги',w:'Недели 3–4'},{n:3,t:'Контент из кейсов',w:'Месяц 2'},{n:4,t:'Вебинар и книга',w:'Месяц 3 и дальше'}];
+const PROGRAM={
+ A:{name:'День A · прямой хват и брусья',ex:[
+  {id:'pull',n:'Подтягивания прямым хватом',sets:5,target:'по (максимум − 2) в каждом подходе'},
+  {id:'dips',n:'Отжимания на брусьях',sets:4,target:'6–10'},
+  {id:'row',n:'Австралийские подтягивания',sets:3,target:'10–15'},
+  {id:'split',n:'Болгарские выпады, на ногу',sets:3,target:'8–12'},
+  {id:'plank',n:'Планка, секунд',sets:3,target:'40–60'}]},
+ B:{name:'День B · обратный хват и пол',ex:[
+  {id:'chin',n:'Подтягивания обратным хватом',sets:5,target:'по (максимум − 2)'},
+  {id:'push',n:'Отжимания от пола',sets:4,target:'12–25'},
+  {id:'squat',n:'Приседания или пистолет к опоре',sets:3,target:'10–20'},
+  {id:'legs',n:'Подъём коленей в висе',sets:3,target:'8–15'},
+  {id:'neck',n:'Шея и грудной отдел, минут',sets:1,target:'5'}]}};
+const DEF={rate:12050,incomeGoal:30000000,start:'2026-10-19',
+ channels:['Пациенты (своя практика)','Работы для врачей','Другие клиники','Лаборатория клиники','Лекции и курсы','Прочее'],
+ services:['Брекеты','Элайнеры (сетап)','Сплинт','Хирургический шаблон','Аксиография','Аппарат','Консультация','Прочее'],
+ expCats:['Материалы и смолы','Оборудование','Софт и подписки','Процент клинике / аренда','Реклама и контент','Обучение','Транспорт','Еда','Дом и быт','Спорт и здоровье','Прочее'],
+ bizCats:['Материалы и смолы','Оборудование','Софт и подписки','Процент клинике / аренда','Реклама и контент','Обучение'],
+ habits:[{id:'money',n:'Внёс все деньги за день'},{id:'move',n:'Тренировка или разминка 10 мин'},{id:'content',n:'Час на контент'},{id:'learn',n:'30 минут обучения или книги'},{id:'sleep',n:'Лёг до 23:30'}],
+ routine:[],templates:[],patientsFrom:'2026-11-01'};
+const NAV=[['today','Сегодня','M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z'],
+ ['money','Деньги','M3 7h15a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7zm0 0 2-3h11v3M16 13.5h2'],
+ ['patients','Пациенты','M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.5 21a7.5 7.5 0 0 1 15 0'],
+ ['orders','Заказы','M12 3 3 7.5v9L12 21l9-4.5v-9L12 3zm0 0v18M3 7.5l9 4.5 9-4.5'],
+ ['goals','Цели','M5 21V4m0 0h11l-2 4 2 4H5'],
+ ['sport','Спорт','M3 5h18M6 5v14M18 5v14M9 13h6'],
+ ['content','Контент','M4 5h16v14H4zM10 9.5v5l4.5-2.5L10 9.5z']];
+const TITLES={today:'Сегодня',money:'Деньги',patients:'Пациенты',orders:'Заказы',goals:'Цели и фазы',sport:'Турник',content:'Контент'};
+const MON=['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const today=()=>iso(new Date());
+const addDays=(s,n)=>{const d=new Date(s+'T12:00:00');d.setDate(d.getDate()+n);return iso(d)};
+const wd=s=>{const x=new Date(s+'T12:00:00').getDay();return x===0?7:x};
+const dmy=s=>s?s.slice(8,10)+'.'+s.slice(5,7):'';
+const daysBetween=(a,b)=>Math.round((Date.parse(b+'T12:00:00')-Date.parse(a+'T12:00:00'))/864e5);
+const nf0=new Intl.NumberFormat('ru-RU',{maximumFractionDigits:0});
+const nf2=new Intl.NumberFormat('ru-RU',{maximumFractionDigits:2});
+const nf1=new Intl.NumberFormat('ru-RU',{maximumFractionDigits:1});
+const fmt=(v,cur)=>cur==='USD'?'$'+nf2.format(v||0):nf0.format(v||0)+' сум';
+const fmtU=v=>{const a=Math.abs(v);return a>=1e6?nf1.format(v/1e6)+' млн':a>=1e3?nf0.format(v/1e3)+' тыс':nf0.format(v)};
+const cfg=()=>Object.assign({},DEF,S.settings||{});
+const toU=(v,cur,c)=>(+v||0)*(cur==='USD'?(+c.rate||DEF.rate):1);
+/* payments: an income with paid:false keeps payments:[{date,amount}] in its own currency; remainder = amount − payments */
+const r2=n=>Math.round(n*100)/100;
+const recv=x=>x.type!=='in'||x.paid!==false?(+x.amount||0):r2((x.payments||[]).reduce((p,y)=>p+(+y.amount||0),0));
+const rest=x=>Math.max(0,r2((+x.amount||0)-recv(x)));
+function payTag(x){if(x.type!=='in'||x.paid!==false)return '';return recv(x)>0?` <span class="tag debt">остаток ${esc(fmt(rest(x),x.cur))}</span>`:' <span class="tag debt">долг</span>'}
+const payMeta=x=>[x.gross!=null&&(+x.lab||+x.ref)?`моя часть из оплаты ${fmt(x.gross,x.cur)}; техничке ${fmt(+x.lab||0,x.cur)}, врачу ${fmt(+x.ref||0,x.cur)}`:'',
+ (x.payments||[]).length?'оплаты: '+x.payments.map(y=>`${dmy(y.date)} ${fmt(y.amount,x.cur)}`).join(', '):''].filter(Boolean).join(' · ');
+function parseAmt(s){s=String(s||'').toLowerCase().replace(/\s/g,'').replace(',','.');let m=1;
+ if(/(млн|м|m)$/.test(s)){m=1e6;s=s.replace(/(млн|м|m)$/,'')}else if(/(тыс|к|k)$/.test(s)){m=1e3;s=s.replace(/(тыс|к|k)$/,'')}
+ const n=parseFloat(s.replace(/[^0-9.]/g,''));return isFinite(n)?Math.round(n*m*100)/100:0}
+const hid=s=>{let h=0;for(const ch of s)h=(h*31+ch.charCodeAt(0))|0;return 'h'+Math.abs(h).toString(36)};
+const store=(k,v)=>{try{v===undefined?void 0:localStorage.setItem(k,v)}catch(e){}};
+const load=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+
+/* ---------- state + storage ---------- */
+const S={tx:[],orders:[],goals:[],workouts:[],content:[],patients:[],days:{},settings:null,live:false,loaded:false};
+let tab=load('los.tab')||'today'; if(!TITLES[tab])tab='today';
+let month=today().slice(0,7), armed=null, armTimer=null, db=null, Q=Promise.resolve();
+const COLS=['tx','orders','goals','workouts','content','patients'];
+
+function errMsg(e){const c=e&&e.code;return c==='invalid_argument'?'Не сохранилось: нет прав на запись':c==='quota_exceeded'?'Хранилище заполнено':'Не сохранилось, попробуйте ещё раз'}
+function W(fn){Q=Q.then(fn).catch(e=>{console.warn(e);toast(errMsg(e))});return Q}
+function memSet(col,id,data){id=id||('m'+Math.random().toString(36).slice(2,10));
+ if(col==='days')S.days[id]=data;else if(col==='settings')S.settings=data;
+ else{const a=S[col],i=a.findIndex(x=>x.id===id),o={...data,id};i>=0?a[i]=o:a.push(o)}schedule()}
+const strip=o=>{const c={...o};delete c.id;return c};
+function setDoc(col,id,data){if(!db)return memSet(col,id,data);return W(()=>db.collection(col).doc(id).set(data))}
+function addDoc(col,data){if(!db)return memSet(col,null,data);return W(()=>db.collection(col).add(data))}
+function updDoc(col,id,patch){if(!db){const o=S[col].find(x=>x.id===id);return memSet(col,id,{...strip(o||{}),...patch})}return W(()=>db.collection(col).doc(id).update(patch))}
+function delDoc(col,id){if(!db){S[col]=S[col].filter(x=>x.id!==id);schedule();return}return W(()=>db.collection(col).doc(id).delete())}
+
+let raf=0;function schedule(){if(!raf)raf=requestAnimationFrame(()=>{raf=0;render()})}
+
+/* ---------- IndexedDB with the Firestore-style API the code above was written against ----------
+   one database "lifeos", one object store per collection (key = document id) plus "meta" for app state.
+   The whole database is mirrored in memory, so onSnapshot fires at once and after every write.
+   Every document carries _updatedAt (ms); a deleted one stays as {_deleted:true,_updatedAt} so the
+   deletion can travel to other devices through Yandex Disk. Screens never see either field. */
+const STORES=['settings',...COLS,'days'];
+const pub=d=>{const c={...d};delete c._updatedAt;delete c._deleted;return c};
+let lastStamp=0;const stampNow=()=>(lastStamp=Math.max(Date.now(),lastStamp+1));
+const stamp=d=>({...pub(d),_updatedAt:stampNow()});
+function newId(){const a='abcdefghijklmnopqrstuvwxyz0123456789',r=crypto.getRandomValues(new Uint8Array(20));let s='';for(const x of r)s+=a[x%36];return s}
+const idbDone=t=>new Promise((res,rej)=>{t.oncomplete=()=>res();t.onabort=t.onerror=()=>{const e=t.error;rej(e&&e.name==='QuotaExceededError'?{code:'quota_exceeded'}:e||new Error('idb'))}});
+const idbReq=r=>new Promise((res,rej)=>{r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const M={}; /* meta: lastBackup, localBackup, ya, yaSync, … */
+const LDB={idb:null,docs:{},subs:{},
+ open(){return new Promise((res,rej)=>{let r;try{r=indexedDB.open(DB_NAME,1)}catch(e){rej(e);return}
+  r.onupgradeneeded=()=>{const d=r.result;for(const s of [...STORES,'meta'])if(!d.objectStoreNames.contains(s))d.createObjectStore(s)};
+  r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);r.onblocked=()=>rej(new Error('blocked'))})
+  .then(async d=>{this.idb=d;const t=d.transaction([...STORES,'meta']);
+   const all=[...STORES,'meta'].map(c=>{const st=t.objectStore(c);return Promise.all([c,idbReq(st.getAllKeys()),idbReq(st.getAll())])});
+   for(const [c,k,v] of await Promise.all(all)){
+    if(c==='meta')k.forEach((x,i)=>M[x]=v[i]);else{const m=new Map();k.forEach((x,i)=>m.set(x,v[i]));this.docs[c]=m}}})},
+ snap(c){const docs=[...this.docs[c]].filter(([,d])=>!d._deleted).sort((a,b)=>a[0]<b[0]?-1:a[0]>b[0]?1:0).map(([id,d])=>({id,data:()=>pub(d)}));return {docs,size:docs.length,empty:!docs.length}},
+ docSnap(c,id){const d=this.docs[c].get(id),ok=!!d&&!d._deleted;return {id,exists:ok,data:()=>ok?pub(d):undefined}},
+ emit(c){for(const f of this.subs[c]||[])try{f()}catch(e){console.warn(e)}},
+ sub(c,f){(this.subs[c]=this.subs[c]||[]).push(f);f();return()=>{this.subs[c]=this.subs[c].filter(x=>x!==f)}},
+ /* write [[id,doc]] to one or more stores; local=true means a change made on this phone (starts the sync timer) */
+ put(byCol,local){const cols=Object.keys(byCol).filter(c=>byCol[c].length);if(!cols.length)return Promise.resolve();
+  for(const c of cols)for(const [id,d] of byCol[c])this.docs[c].set(id,d);
+  const t=this.idb.transaction(cols,'readwrite');for(const c of cols){const st=t.objectStore(c);for(const [id,d] of byCol[c])st.put(d,id)}
+  for(const c of cols)this.emit(c);if(local)onLocalChange();return idbDone(t)},
+ collection(c){const self=this;return {
+  onSnapshot(cb){return self.sub(c,()=>cb(self.snap(c)))},
+  add(data){const id=newId();return self.put({[c]:[[id,stamp(data)]]},true).then(()=>({id}))},
+  doc(id){return self.doc(c+'/'+id)}}},
+ doc(path){const self=this,[c,id]=path.split('/');return {id,
+  onSnapshot(cb){return self.sub(c,()=>cb(self.docSnap(c,id)))},
+  set:data=>self.put({[c]:[[id,stamp(data)]]},true),
+  update:patch=>{const o=self.docs[c].get(id);return self.put({[c]:[[id,stamp({...(o&&!o._deleted?pub(o):{}),...patch})]]},true)},
+  delete:()=>self.docs[c].has(id)?self.put({[c]:[[id,{_deleted:true,_updatedAt:stampNow()}]]},true):Promise.resolve()}}};
+function metaSet(k,v){if(v===undefined)delete M[k];else M[k]=v;if(!LDB.idb)return Promise.resolve();
+ const t=LDB.idb.transaction('meta','readwrite');v===undefined?t.objectStore('meta').delete(k):t.objectStore('meta').put(v,k);return idbDone(t).catch(e=>console.warn(e))}
+/* ?db=<name> keeps a second, independent copy in the same browser (used to test sync between "two phones") */
+const DB_NAME=(()=>{const n=new URLSearchParams(location.search).get('db');return n&&/^[a-z0-9-]{1,20}$/.test(n)?'lifeos-'+n:'lifeos'})();
+let dbErr=null;
+(async()=>{
+ try{await LDB.open();db=LDB}catch(e){console.warn(e);db=null;dbErr=e}
+ if(!db){S.loaded=true;render();return}
+ S.live=true;let pending=COLS.length+2;const done=()=>{if(--pending===0){S.loaded=true}schedule()};
+ const once=fn=>{let f=false;return()=>{if(!f){f=true;fn()}}};
+ for(const c of COLS){const d=once(done);db.collection(c).onSnapshot(s=>{S[c]=s.docs.map(x=>({...x.data(),id:x.id}));d();schedule()},e=>{console.warn(c,e);d()})}
+ const dd=once(done);db.collection('days').onSnapshot(s=>{const o={};for(const x of s.docs)o[x.id]=x.data();S.days=o;dd();schedule()},e=>{console.warn(e);dd()});
+ const ds=once(done);db.doc('settings/main').onSnapshot(s=>{S.settings=s.exists?s.data():null;ds();schedule()},e=>{console.warn(e);ds()});
+ afterOpen();
+})();
+
+/* ---------- derived ---------- */
+const habitCount=d=>Object.values((S.days[d]||{}).habits||{}).filter(Boolean).length;
+function stats(){
+ let xp=S.tx.length*5+S.orders.length*10+S.orders.filter(o=>o.status==='paid').length*15
+  +S.goals.filter(g=>g.done).reduce((a,g)=>a+(+g.xp||40),0)+S.workouts.length*30
+  +S.content.filter(x=>x.status==='pub').reduce((a,x)=>a+(CONTENT_XP[x.ch]||25),0);
+ for(const k in S.days)xp+=habitCount(k)*10;
+ let li=0;LEVELS.forEach((l,i)=>{if(xp>=l[0])li=i});
+ const cur=LEVELS[li][0],nxt=LEVELS[li+1]?LEVELS[li+1][0]:null;
+ let streak=0,d=today();if(habitCount(d)<3)d=addDays(d,-1);while(habitCount(d)>=3){streak++;d=addDays(d,-1)}
+ let best=0,run=0,prev=null;for(const k of Object.keys(S.days).sort()){if(habitCount(k)>=3){run=prev&&daysBetween(prev,k)===1?run+1:1;prev=k;best=Math.max(best,run)}else{run=0;prev=null}}
+ return {xp,li,lvl:li+1,title:LEVELS[li][1],cur,nxt,prog:nxt?(xp-cur)/(nxt-cur):1,streak,best:Math.max(best,streak)}}
+function monthSum(mo){const c=cfg(),r={inc:0,unpaid:0,out:0,biz:0,pers:0,byCh:{},bySvc:{},byCat:{}};
+ for(const x of S.tx){if(!(x.date||'').startsWith(mo))continue;const v=toU(x.amount,x.cur,c);
+  if(x.type==='in'){r.inc+=v;if(x.paid===false)r.unpaid+=toU(rest(x),x.cur,c);const ch=x.channel||'Прочее';r.byCh[ch]=(r.byCh[ch]||0)+v;
+   const o=r.bySvc[x.service||'Прочее']||(r.bySvc[x.service||'Прочее']={v:0,n:0});o.v+=v;o.n++}
+  else{r.out+=v;const k=x.cat||'Прочее';r.byCat[k]=(r.byCat[k]||0)+v;(c.bizCats||[]).includes(k)?r.biz+=v:r.pers+=v}}
+ r.net=r.inc-r.out;return r}
+function debts(){const a=[];for(const x of S.tx)if(x.type==='in'&&x.paid===false&&rest(x)>0)a.push({kind:'tx',id:x.id,who:x.party||'Без имени',what:x.service||x.channel||'',amount:rest(x),total:+x.amount||0,got:recv(x),cur:x.cur,since:x.date});
+ for(const o of S.orders)if(o.status==='done')a.push({kind:'order',id:o.id,who:o.client,what:o.service,amount:+o.price||0,total:+o.price||0,got:0,cur:o.cur,since:o.at_done||o.date});
+ return a.sort((p,q)=>(p.since||'').localeCompare(q.since||''))}
+function curPhase(){for(const p of PHASES)if(S.goals.some(g=>(+g.phase||1)===p.n&&!g.done))return p.n;return 4}
+const phaseDone=n=>{const g=S.goals.filter(x=>(+x.phase||1)===n);return g.length>0&&g.every(x=>x.done)};
+const weekStart=()=>addDays(today(),-(wd(today())-1));
+const bestRep=w=>Math.max(0,...(w.items||[]).filter(i=>i.id==='pull'||i.id==='chin').flatMap(i=>i.reps||[]).map(Number));
+const sortedW=()=>[...S.workouts].sort((a,b)=>(a.date||'').localeCompare(b.date||'')||(a.createdAt||0)-(b.createdAt||0));
+const pullMax=()=>Math.max(0,...S.workouts.map(bestRep));
+function achievements(st){const days=new Set(S.tx.map(x=>x.date)),pm=pullMax(),pub=S.content.filter(x=>x.status==='pub');
+ return [['Первая запись','Первая операция в учёте',S.tx.length>=1],['Неделя учёта','Записи за 7 разных дней',days.size>=7],
+ ['Месяц учёта','Записи за 30 разных дней',days.size>=30],['Без хвостов','10 оплаченных заказов, долгов ноль',S.orders.filter(o=>o.status==='paid').length>=10&&debts().length===0],
+ ['Серия 7','7 засчитанных дней подряд',st.best>=7],['Серия 30','30 дней подряд',st.best>=30],
+ ['12 тренировок','Месяц турника',S.workouts.length>=12],['10 подтягиваний','В одном подходе',pm>=10],['15 подтягиваний','В одном подходе',pm>=15],
+ ['Первая публикация','Пост из кейса',pub.length>=1],['30 публикаций','Регулярность',pub.length>=30],['Первое видео','YouTube',pub.some(x=>x.ch==='yt')],
+ ['Первый вебинар','Для врачей',pub.some(x=>x.ch==='web')],['Фаза 1 закрыта','Учёт и турник',phaseDone(1)],['Фаза 2 закрыта','Заказы и прайс',phaseDone(2)]]}
+
+/* ---------- pieces ---------- */
+function archSVG(p){const n=14,on=Math.round(p*n);let g='';
+ for(let i=0;i<n;i++){const a=Math.PI*(1-i/(n-1)),x=66+52*Math.cos(a),y=78-58*Math.sin(a);
+  const k=Math.min(i,n-1-i),w=k<2?13:k<4?11:k<5?9:8,h=k<2?14:k<4?12:11;
+  const rot=-(a*180/Math.PI-90);
+  g+=`<rect x="${(x-w/2).toFixed(1)}" y="${(y-h/2).toFixed(1)}" width="${w}" height="${h}" rx="${k<4?4:3.5}" transform="rotate(${rot.toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)})" fill="currentColor" fill-opacity="${i<on?1:.22}"/>`}
+ return `<svg class="arch" viewBox="0 0 132 96" role="img" aria-label="Прогресс уровня: ${on} из ${n} зубов дуги">${g}</svg>`}
+function hero(st){return `<button type="button" class="hero" data-act="drill" data-k="xp">
+ <div class="lvl">Уровень ${st.lvl}</div><div class="title">${esc(st.title)}</div>
+ <div class="sub num">${st.nxt?`${nf0.format(st.xp)} / ${nf0.format(st.nxt)} XP до «${esc(LEVELS[st.li+1][1])}»`:`${nf0.format(st.xp)} XP · высший уровень`}</div>
+ ${archSVG(st.prog)}
+ <div class="stats"><span class="pill num">Серия: ${st.streak} дн.</span><span class="pill num">Рекорд: ${st.best}</span><span class="pill num">Достижений: ${achievements(st).filter(a=>a[2]).length}/${achievements(st).length}</span><span class="pill">Как считаются очки ›</span></div></button>`}
+const delBtn=(key,act,id,ask)=>`<button class="x-btn ${armed===key?'armed':''}" data-act="${act}" data-id="${esc(id)}" data-key="${esc(key)}" aria-label="Удалить">${armed===key?(ask||'Удалить?'):'×'}</button>`;
+const ordTx=id=>S.tx.filter(x=>x.orderId===id);
+function bars(obj,cls,kind,mo){const e=Object.entries(obj).sort((a,b)=>b[1]-a[1]);if(!e.length)return '<div class="empty" style="padding:0">Пока пусто</div>';const mx=e[0][1];
+ return `<div class="hbars">${e.map(([k,v])=>`<button type="button" class="hb" data-act="drill" data-k="${kind}" data-m="${mo}" data-v="${esc(k)}"><span class="l"><span>${esc(k)}</span><span class="num">${fmtU(v)}</span></span><span class="bar ${cls}" style="display:block"><i style="width:${Math.max(2,v/mx*100).toFixed(1)}%"></i></span></button>`).join('')}</div>`}
+
+/* ---------- views ---------- */
+function vToday(c){const st=stats(),t=today(),h=(S.days[t]||{}).habits||{},w=wd(t),m=monthSum(t.slice(0,7)),ws=weekStart();
+ const routine=(c.routine||[]).filter(r=>String(r.d||'1234567').includes(String(w))).sort((a,b)=>String(a.t).localeCompare(String(b.t)));
+ const ph=curPhase(),focus=S.goals.filter(g=>!g.done&&(+g.phase||1)===ph).slice(0,4);
+ const wk=S.workouts.filter(x=>x.date>=ws).length,pub=S.content.filter(x=>x.status==='pub'&&(x.pubDate||'')>=ws).length,db_=debts();
+ const hd=c.habits.filter(x=>h[x.id]).length;
+ return `${hero(st)}
+ <section class="sec"><div class="sec-h"><h2>Быстрая запись</h2></div><div class="chips">
+  ${(c.templates||[]).map((p,i)=>`<button class="chip ${p.type==='out'?'out':'in'}" data-act="tpl" data-i="${i}">${esc(p.l)}</button>`).join('')}
+  <button class="chip ghost" data-act="tx-new" data-type="in">+ Доход</button><button class="chip ghost" data-act="tx-new" data-type="out">+ Расход</button><button class="chip ghost" data-act="ord-new">+ Заказ</button></div></section>
+ <section class="sec"><div class="sec-h"><h2>Привычки</h2><span class="meta num">${hd}/${c.habits.length} · день засчитан от 3</span></div>
+  <div class="list">${c.habits.map(x=>`<button class="row check ${h[x.id]?'on':''}" data-act="habit" data-id="${esc(x.id)}" aria-pressed="${!!h[x.id]}"><span class="box"></span><span class="grow t">${esc(x.n)}</span><span class="xp">+10</span></button>`).join('')}</div></section>
+ <section class="sec"><div class="sec-h"><h2>Неделя и месяц</h2><span class="meta" style="text-transform:capitalize">${MON[+t.slice(5,7)-1]}</span></div>
+  <div class="tiles">
+   <button type="button" class="tile" data-act="drill" data-k="wo-week"><div class="k">Тренировки</div><div class="v">${wk} / 3</div><div class="bar good" style="margin-top:8px"><i style="width:${Math.min(100,wk/3*100)}%"></i></div></button>
+   <button type="button" class="tile" data-act="drill" data-k="pub-week"><div class="k">Публикации</div><div class="v">${pub} / 4</div><div class="bar" style="margin-top:8px"><i style="width:${Math.min(100,pub/4*100)}%"></i></div></button>
+   <button type="button" class="tile" data-act="drill" data-k="net" data-m="${t.slice(0,7)}"><div class="k">Доход за месяц</div><div class="v pos">${fmtU(m.inc)}</div><div class="s">расход ${fmtU(m.out)}</div></button>
+   <button type="button" class="tile" data-act="drill" data-k="debt"><div class="k">Вам должны</div><div class="v ${db_.length?'neg':''}">${fmtU(db_.reduce((a,d)=>a+toU(d.amount,d.cur,c),0))}</div><div class="s">${db_.length} поз.</div></button>
+  </div></section>
+ <section class="sec"><div class="sec-h"><h2>Фокус: фаза ${ph}</h2><button class="btn sm" data-tab="goals">Все цели</button></div>
+  <div class="list">${focus.length?focus.map(goalRow).join(''):'<div class="empty">Цели этой фазы закрыты. Добавьте следующие во вкладке «Цели».</div>'}</div></section>
+ <section class="sec"><div class="sec-h"><h2>Распорядок на сегодня</h2><button class="btn sm" data-act="settings">Изменить</button></div>
+  <div class="list">${routine.length?routine.map(r=>`<div class="item"><span class="time">${esc(r.t)}</span><span class="grow">${esc(r.n)}</span></div>`).join(''):'<div class="empty">Распорядок не задан. Нажмите «Изменить».</div>'}</div></section>
+ <section class="sec"><div class="sec-h"><h2>Достижения</h2></div><div class="badges">${achievements(st).map(a=>`<div class="badge ${a[2]?'on':'off'}"><b>${esc(a[0])}</b><span>${esc(a[1])}</span></div>`).join('')}</div></section>`}
+
+function goalRow(g){return `<button class="row check ${g.done?'on':''}" data-act="goal" data-id="${esc(g.id)}" aria-pressed="${!!g.done}"><span class="box"></span><span class="grow"><span class="t">${esc(g.title)}</span><br><span class="tag ${esc(g.area)}">${esc(AREAS[g.area]||'Прочее')}</span></span><span class="xp">+${+g.xp||40}</span></button>`}
+
+function vMoney(c){const m=monthSum(month),dl=debts(),[y,mo]=month.split('-');
+ const list=S.tx.filter(x=>(x.date||'').startsWith(month)).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.createdAt||0)-(a.createdAt||0));
+ const svc=Object.entries(m.bySvc).sort((a,b)=>b[1].v-a[1].v);let lastD='';
+ const goal=+c.incomeGoal||0;
+ return `<section class="sec"><div class="sec-h"><div class="month-sw"><button class="icon-btn" data-act="mon" data-d="-1" aria-label="Предыдущий месяц">‹</button><b>${MON[+mo-1]} ${y}</b><button class="icon-btn" data-act="mon" data-d="1" aria-label="Следующий месяц">›</button></div><span class="meta num">$1 = ${nf0.format(c.rate)} сум</span></div>
+  <div class="tiles">
+   <button type="button" class="tile" data-act="drill" data-k="inc" data-m="${month}"><div class="k">Доход</div><div class="v pos">${fmtU(m.inc)}</div><div class="s">${m.unpaid?`не оплачено ${fmtU(m.unpaid)}`:'всё получено'}</div></button>
+   <button type="button" class="tile" data-act="drill" data-k="out" data-m="${month}"><div class="k">Расход</div><div class="v neg">${fmtU(m.out)}</div><div class="s">работа ${fmtU(m.biz)} · личное ${fmtU(m.pers)}</div></button>
+   <button type="button" class="tile" data-act="drill" data-k="net" data-m="${month}"><div class="k">Чистыми</div><div class="v ${m.net<0?'neg':''}">${fmtU(m.net)}</div><div class="s">доход минус все расходы</div></button>
+   <button type="button" class="tile" data-act="drill" data-k="debt"><div class="k">Вам должны</div><div class="v ${dl.length?'neg':''}">${fmtU(dl.reduce((a,d)=>a+toU(d.amount,d.cur,c),0))}</div><div class="s">${dl.length} поз., за всё время</div></button>
+  </div>
+  ${goal?`<button type="button" class="card" data-act="drill" data-k="goal" data-m="${month}"><div class="hb"><div class="l"><span>Цель месяца по доходу</span><span class="num tap-hint">${fmtU(m.inc)} из ${fmtU(goal)} </span></div><div class="bar good"><i style="width:${Math.min(100,m.inc/goal*100).toFixed(1)}%"></i></div></div></button>`:''}
+  <div class="chips"><button class="chip ghost" data-act="tx-new" data-type="in">+ Доход</button><button class="chip ghost" data-act="tx-new" data-type="out">+ Расход</button>${(c.templates||[]).map((p,i)=>`<button class="chip ${p.type==='out'?'out':'in'}" data-act="tpl" data-i="${i}">${esc(p.l)}</button>`).join('')}</div></section>
+ <section class="sec"><div class="sec-h"><h2>Долги</h2><span class="meta">сданные и неоплаченные</span></div>
+  <div class="list">${dl.length?dl.map(d=>{const days=daysBetween(d.since||today(),today());return `<div class="item"><div class="grow"><div class="t">${esc(d.who)}</div><div class="meta">${esc(d.what)} · ${days} дн.${d.got?` · получено ${fmt(d.got,d.cur)} из ${fmt(d.total,d.cur)}`:''}${days>30?' · <span class="tag debt">больше месяца</span>':''}</div></div><span class="num" style="font-weight:600;white-space:nowrap">${fmt(d.amount,d.cur)}</span><button class="btn sm" data-act="${d.kind==='tx'?'tx-paid':'ord-paid'}" data-id="${esc(d.id)}">Оплата</button></div>`}).join(''):'<div class="empty">Никто не должен. Если оплата будет позже или частично, выберите «В долг» или «Частично» при записи дохода.</div>'}</div></section>
+ <section class="sec"><div class="sec-h"><h2>Доход по каналам</h2></div><div class="card">${bars(m.byCh,'good','ch',month)}</div></section>
+ <section class="sec"><div class="sec-h"><h2>Доход по услугам</h2></div><div class="card tbl-wrap">${svc.length?`<table><thead><tr><th>Услуга</th><th>Кол-во</th><th>Доход</th></tr></thead><tbody>${svc.map(([k,o])=>`<tr><td><button type="button" class="linkbtn" data-act="drill" data-k="svc" data-m="${month}" data-v="${esc(k)}">${esc(k)}</button></td><td>${o.n}</td><td>${fmtU(o.v)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty" style="padding:0">В этом месяце доходов пока нет.</div>'}</div></section>
+ <section class="sec"><div class="sec-h"><h2>Расходы по статьям</h2></div><div class="card">${bars(m.byCat,'red','cat',month)}</div></section>
+ <section class="sec"><div class="sec-h"><h2>Операции</h2><span class="meta">${list.length}</span></div><div class="list">${list.length?list.map(x=>{const hd=x.date!==lastD?`<div class="dayhead">${dmy(x.date)}</div>`:'';lastD=x.date;
+  return hd+`<div class="item"><div class="grow"><div class="t">${esc(x.type==='in'?(x.service||x.channel):(x.cat))}${payTag(x)}</div><div class="meta">${esc([x.type==='in'?x.channel:'',x.party,x.note,payMeta(x)].filter(Boolean).join(' · '))}</div></div><span class="num ${x.type==='in'?'pos':'neg'}" style="font-weight:600;white-space:nowrap">${x.type==='in'?'+':'−'}${fmt(x.amount,x.cur)}</span>${delBtn('tx'+x.id,'tx-del',x.id,x.orderId?'Отменить оплату?':'')}</div>`}).join(''):'<div class="empty">В этом месяце записей нет. Начните с кнопок выше: одна запись занимает 10 секунд.</div>'}</div></section>`}
+
+function vOrders(c){const by=k=>S.orders.filter(o=>o.status===k).sort((a,b)=>(a.due||'9').localeCompare(b.due||'9'));
+ const open=S.orders.filter(o=>o.status!=='paid'),exp=open.reduce((a,o)=>a+toU(o.price,o.cur,c),0);
+ const card=o=>{const i=ORDER_ST.findIndex(s=>s[0]===o.status),nx=ORDER_ST[i+1],late=o.due&&o.due<today()&&i<3,ot=o.status==='paid'?S.tx.find(x=>x.orderId===o.id):null,ost=ot?rest(ot):0;
+  return `<div class="item"><div class="grow"><div class="t">${esc(o.client)} · ${esc(o.service)}</div><div class="meta">${fmt(o.price,o.cur)}${o.due?` · срок ${dmy(o.due)}`:''}${late?' · <span class="tag debt">просрочен</span>':''}${ost?` · <span class="tag debt">оплачен частично, остаток ${esc(fmt(ost,ot.cur))}</span>`:''}${o.note?' · '+esc(o.note):''}</div></div>${nx?`<button class="btn sm" data-act="ord-next" data-id="${esc(o.id)}">→ ${nx[1]}</button>`:''}${delBtn('o'+o.id,'ord-del',o.id,ordTx(o.id).length?'Удалить с оплатой?':'Удалить?')}</div>`};
+ return `<section class="sec"><div class="tiles"><button type="button" class="tile" data-act="drill" data-k="ord-open"><div class="k">В работе</div><div class="v">${open.length}</div><div class="s">на ${fmtU(exp)} сум</div></button><button type="button" class="tile" data-act="drill" data-k="ord-done"><div class="k">Сданы, ждут оплату</div><div class="v ${by('done').length?'neg':''}">${by('done').length}</div><div class="s">отметьте «Оплачен», когда придут деньги</div></button></div>
+  <button class="btn primary" data-act="ord-new">+ Новый заказ</button>
+  <p class="note" style="margin:0">Статусы: принят → моделирование → печать → сдан → оплачен. Кнопка «Оплачен» открывает окно оплаты: можно внести всю сумму или часть. Доход сам попадёт в «Деньги», остаток останется в долгах. Отменённый заказ или дубль удаляйте кнопкой × (нажать два раза): вместе с заказом удалится и его оплата в «Деньгах».</p></section>
+ ${ORDER_ST.slice(0,4).map(([k,n])=>{const a=by(k);return `<section class="sec"><div class="sec-h"><h2>${n}</h2><span class="meta">${a.length}</span></div><div class="list">${a.length?a.map(card).join(''):'<div class="empty">Пусто</div>'}</div></section>`}).join('')}
+ <section class="sec"><div class="sec-h"><h2>Оплачено недавно</h2></div><div class="list">${(()=>{const a=by('paid').sort((x,y)=>(y.at_paid||'').localeCompare(x.at_paid||'')).slice(0,8);return a.length?a.map(card).join(''):'<div class="empty">Пока нет</div>'})()}</div></section>`}
+
+function vGoals(c){const ph=curPhase();
+ return `<section class="sec"><button class="btn primary" data-act="goal-new">+ Цель</button><p class="note" style="margin:0">Старт программы: ${dmy(c.start)}. Следующая фаза открывается, когда закрыта текущая, но двигаться можно в любом порядке.</p></section>
+ ${PHASES.map(p=>{const g=S.goals.filter(x=>(+x.phase||1)===p.n),d=g.filter(x=>x.done).length;
+  return `<section class="sec phase"><div class="phase-h"><b>Фаза ${p.n} · ${esc(p.t)}</b><span class="meta">${p.w}${p.n===ph?' · сейчас':''}</span></div>
+  <div class="bar ${d===g.length&&g.length?'good':''}"><i style="width:${g.length?d/g.length*100:0}%"></i></div>
+  <div class="list">${g.length?[...g].sort((a,b)=>(a.done?1:0)-(b.done?1:0)||(a.order||0)-(b.order||0)).map(x=>goalRow(x)).join(''):'<div class="empty">Целей нет</div>'}</div></section>`}).join('')}`}
+
+function vSport(c){const ws=weekStart(),wk=S.workouts.filter(x=>x.date>=ws).length,w=sortedW(),last=w[w.length-1],next=last&&last.plan==='A'?'B':'A',pm=pullMax();
+ const pts=w.map(x=>({d:x.date,v:bestRep(x)})).filter(p=>p.v>0).slice(-24);
+ const tgt=pm<10?10:pm<15?15:20;
+ let spark='';if(pts.length>=2){const W_=320,H=90,top=Math.max(tgt,...pts.map(p=>p.v)),X=i=>14+i*(W_-28)/(pts.length-1),Y=v=>H-14-v/top*(H-28);
+  const line=pts.map((p,i)=>`${X(i).toFixed(1)},${Y(p.v).toFixed(1)}`).join(' ');
+  spark=`<svg class="spark" viewBox="0 0 ${W_} ${H}" role="img" aria-label="Лучший подход по тренировкам"><line x1="14" x2="${W_-14}" y1="${Y(tgt)}" y2="${Y(tgt)}" stroke="var(--line)" stroke-dasharray="4 4"/><text x="${W_-14}" y="${Y(tgt)-4}" text-anchor="end" font-size="10" fill="var(--muted)">цель ${tgt}</text><polygon points="${X(0)},${H-14} ${line} ${X(pts.length-1)},${H-14}" fill="var(--accent)" fill-opacity=".12"/><polyline points="${line}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/><circle cx="${X(pts.length-1)}" cy="${Y(pts[pts.length-1].v)}" r="4" fill="var(--accent)"/><text x="14" y="${H-2}" font-size="10" fill="var(--muted)">${dmy(pts[0].d)}</text><text x="${W_-14}" y="${H-2}" text-anchor="end" font-size="10" fill="var(--muted)">${dmy(pts[pts.length-1].d)}</text></svg>`}
+ return `<section class="sec"><button type="button" class="card" data-act="drill" data-k="wo-all" style="display:grid;gap:8px"><div class="meta" style="display:flex;justify-content:space-between"><span>Лучший подход подтягиваний</span><span class="tap-hint"></span></div><div style="display:flex;align-items:baseline;gap:10px"><span class="big">${pm||'—'}</span><span class="meta">цель ${tgt}</span></div>${spark||'<div class="note">После двух тренировок здесь появится график роста.</div>'}</button>
+  <div class="tiles"><button type="button" class="tile" data-act="drill" data-k="wo-week"><div class="k">На этой неделе</div><div class="v">${wk} / 3</div></button><button type="button" class="tile" data-act="drill" data-k="wo-all"><div class="k">Всего тренировок</div><div class="v">${S.workouts.length}</div></button></div>
+  <button class="btn primary" data-act="wo-new" data-plan="${next}">Начать: ${esc(PROGRAM[next].name)}</button>
+  <div class="chips"><button class="chip ghost" data-act="wo-new" data-plan="${next==='A'?'B':'A'}">Сделать день ${next==='A'?'B':'A'}</button></div></section>
+ <section class="sec"><div class="sec-h"><h2>Программа · 3 раза в неделю</h2></div>
+  ${['A','B'].map(k=>`<div class="card"><b style="font-family:var(--font-display);font-weight:500">${esc(PROGRAM[k].name)}</b><div class="tbl-wrap"><table><tbody>${PROGRAM[k].ex.map(e=>`<tr><td>${esc(e.n)}</td><td>${e.sets} × ${esc(e.target)}</td></tr>`).join('')}</tbody></table></div></div>`).join('')}
+  <p class="note" style="margin:0">Чередуйте A и B: пн A, ср B, пт A, потом наоборот. Прогрессия: когда все подходы сделаны с верхней границей, добавьте 1 повтор в каждом. Подтягивания: раз в 2 недели тест на максимум в первом подходе. Отдых между подходами 2 минуты. Чтобы набирать силу и массу, ешьте досыта и добирайте белок в каждый приём пищи.</p></section>
+ <section class="sec"><div class="sec-h"><h2>История</h2></div><div class="list">${w.length?[...w].reverse().slice(0,20).map(x=>`<div class="item"><span class="time">${dmy(x.date)}</span><div class="grow"><div class="t">День ${esc(x.plan)}</div><div class="meta">${esc((x.items||[]).map(i=>{const e=[...PROGRAM.A.ex,...PROGRAM.B.ex].find(z=>z.id===i.id);return (e?e.n.split(',')[0]:i.id)+': '+(i.reps||[]).join('-')}).join(' · '))}</div></div>${delBtn('w'+x.id,'wo-del',x.id)}</div>`).join(''):'<div class="empty">Тренировок ещё нет. Первая — тест: сколько подтягиваний подряд.</div>'}</div></section>`}
+
+function vContent(c){const ws=weekStart(),pubW=S.content.filter(x=>x.status==='pub'&&(x.pubDate||'')>=ws);
+ const cnt=k=>pubW.filter(x=>x.ch===k).length;
+ const card=x=>{const i=CONTENT_ST.findIndex(s=>s[0]===x.status),nx=CONTENT_ST[i+1];return `<div class="item"><div class="grow"><div class="t">${esc(x.title)}</div><div class="meta"><span class="tag">${esc(CH[x.ch]||x.ch)}</span>${x.pubDate?' · '+dmy(x.pubDate):''}${x.note?' · '+esc(x.note):''}</div></div>${nx?`<button class="btn sm" data-act="ct-next" data-id="${esc(x.id)}">→ ${nx[1]}</button>`:`<span class="xp">+${CONTENT_XP[x.ch]||25}</span>`}${delBtn('c'+x.id,'ct-del',x.id)}</div>`};
+ return `<section class="sec"><div class="tiles"><button type="button" class="tile" data-act="drill" data-k="pub-ig"><div class="k">Instagram на неделе</div><div class="v">${cnt('ig')} / 2</div><div class="s">для пациентов</div></button><button type="button" class="tile" data-act="drill" data-k="pub-tg"><div class="k">Telegram на неделе</div><div class="v">${cnt('tg')} / 2</div><div class="s">для врачей</div></button></div>
+  <button class="btn primary" data-act="ct-new">+ Идея</button>
+  <p class="note" style="margin:0">Каждый кейс даёт два материала: пост в Instagram для пациентов и разбор в Telegram для врачей. Раз в 2–3 недели из лучших кейсов собирается видео на YouTube. Перед публикацией нужно согласие пациента на фото.</p></section>
+ ${CONTENT_ST.map(([k,n])=>{const a=S.content.filter(x=>x.status===k).sort((p,q)=>(q.pubDate||'').localeCompare(p.pubDate||''));const sh=k==='pub'?a.slice(0,10):a;
+  return `<section class="sec"><div class="sec-h"><h2>${n}</h2><span class="meta">${a.length}</span></div><div class="list">${sh.length?sh.map(card).join(''):'<div class="empty">Пусто</div>'}</div></section>`}).join('')}`}
+
+const VIEWS={today:vToday,money:vMoney,patients:vPatients,orders:vOrders,goals:vGoals,sport:vSport,content:vContent};
+function render(){const c=cfg();$('#ttl').textContent=TITLES[tab];
+ $('#tabs').innerHTML=NAV.map(([k,n,d])=>`<button class="${k===tab?'on':''}" data-tab="${k}" aria-current="${k===tab?'page':'false'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>${n}</button>`).join('');
+ const ban=(!S.live&&S.loaded?'<div class="banner">Хранилище на телефоне недоступно, записи исчезнут после перезагрузки. Так бывает в режиме «Частный доступ» Safari: откройте Life OS в обычной вкладке или с экрана «Домой».</div>':S.live&&!S.loaded?'<div class="banner">Загружаю ваши данные…</div>':'')+(tab==='today'&&S.live&&S.loaded?todayBanners():'');
+ $('#main').innerHTML=ban+VIEWS[tab](c);
+ if(drillState&&!$('#wrap').hidden)renderDrill(false)}
+
+/* ---------- sheet forms ---------- */
+const opts=(a,sel)=>a.map(x=>`<option${x===sel?' selected':''}>${esc(x)}</option>`).join('');
+const parties=()=>[...new Set([...S.tx.map(x=>x.party),...S.orders.map(o=>o.client)].filter(Boolean))];
+function openSheet(html){drillState=null;drillStack=[];$('#sheet').innerHTML=html;$('#wrap').hidden=false;$('#sheet').scrollTop=0;const f=$('#sheet').querySelector('input:not([type=hidden]):not([type=radio]),select');if(f&&matchMedia('(pointer:fine)').matches)f.focus()}
+function closeSheet(){drillState=null;drillStack=[];$('#wrap').hidden=true;$('#sheet').innerHTML=''}
+const head=t=>`<div class="sheet-h"><h3>${t}</h3><button type="button" class="btn sm" data-act="close">Закрыть</button></div>`;
+const curSeg=cur=>`<div class="seg" role="radiogroup" aria-label="Валюта"><label><input type="radio" name="cur" value="UZS" ${cur!=='USD'?'checked':''}><span>сум</span></label><label><input type="radio" name="cur" value="USD" ${cur==='USD'?'checked':''}><span>$</span></label></div>`;
+function txForm(p){const c=cfg(),isIn=p.type!=='out';
+ openSheet(`<form data-form="tx">${head(isIn?'Доход':'Расход')}<input type="hidden" name="type" value="${isIn?'in':'out'}">
+ <label class="f">Сумма<input id="f-amt" name="amount" inputmode="decimal" autocomplete="off" placeholder="450к, 1,2м или 120" value="${p.amount||''}" required></label>
+ ${curSeg(p.cur)}<div class="preview" id="f-prev"></div>
+ ${isIn?`<div class="two"><label class="f">Канал<select id="f-ch" name="channel">${opts(c.channels,p.channel)}</select></label><label class="f">Услуга<select id="f-svc" name="service">${opts(c.services,p.service)}</select></label></div>
+ <label class="f">Кто заплатил (врач, клиника, пациент)<input id="f-party" name="party" list="dl-p" autocomplete="off"></label><datalist id="dl-p">${parties().map(x=>`<option value="${esc(x)}">`).join('')}</datalist>
+ <label class="f">Дата<input id="f-d" type="date" name="date" value="${today()}"></label>
+ <div class="f" style="display:grid;gap:5px;font-size:13px;color:var(--muted);font-weight:500">Оплата
+ <div class="seg" role="radiogroup" aria-label="Оплата"><label><input type="radio" name="pay" value="full" checked><span>Оплачено</span></label><label><input type="radio" name="pay" value="part"><span>Частично</span></label><label><input type="radio" name="pay" value="none"><span>В долг</span></label></div></div>
+ <label class="f" id="got-wrap" hidden>Сколько получено сейчас<input id="f-got" name="got" inputmode="decimal" autocomplete="off" placeholder="например 50 или 500к"></label>
+ <div class="preview" id="f-rest"></div>`
+ :`<div class="two"><label class="f">Статья<select id="f-cat" name="cat">${opts(c.expCats,p.cat)}</select></label><label class="f">Дата<input id="f-d" type="date" name="date" value="${today()}"></label></div>`}
+ <label class="f">Заметка<input id="f-note" name="note" autocomplete="off"></label>
+ <button class="btn primary" type="submit">Сохранить · +5 XP</button>
+ <button type="button" class="btn wide" data-act="tx-new" data-type="${isIn?'out':'in'}">Это ${isIn?'расход':'доход'}</button></form>`);updPrev()}
+function updPrev(){const a=$('#f-amt'),p=$('#f-prev');if(!a||!p)return;const v=parseAmt(a.value),cur=(document.querySelector('input[name=cur]:checked')||{}).value;p.textContent=v?'= '+fmt(v,cur)+(cur==='USD'?' ≈ '+fmt(toU(v,'USD',cfg()),'UZS'):''):'';
+ const pay=(document.querySelector('input[name=pay]:checked')||{}).value,gw=$('#got-wrap'),r=$('#f-rest');if(gw)gw.hidden=pay!=='part';
+ if(r){const g=pay==='part'?parseAmt(($('#f-got')||{}).value):pay==='none'?0:v;r.textContent=v&&pay!=='full'?(g>=v?'Получено полностью':`В долг останется: ${fmt(r2(v-g),cur)}`):''}}
+function payForm(kind,id){let t,cur,total,got,who,what;
+ if(kind==='tx'){const x=S.tx.find(z=>z.id===id);if(!x)return;cur=x.cur;total=+x.amount||0;got=recv(x);who=x.party||'Без имени';what=x.service||x.channel||''}
+ else{const o=S.orders.find(z=>z.id===id);if(!o)return;cur=o.cur;total=+o.price||0;got=0;who=o.client;what=o.service}
+ const left=r2(total-got);
+ openSheet(`<form data-form="pay">${head('Оплата')}<input type="hidden" name="kind" value="${kind}"><input type="hidden" name="id" value="${esc(id)}">
+ <div class="formula"><div class="frow"><span>${esc(who)} · ${esc(what)}</span></div><div class="frow"><span>Сумма</span><span class="num">${fmt(total,cur)}</span></div><div class="frow"><span>Уже получено</span><span class="num">${fmt(got,cur)}</span></div><div class="frow total"><span>Остаток</span><span class="num">${fmt(left,cur)}</span></div></div>
+ <label class="f">Сколько получено сейчас, ${cur==='USD'?'$':'сум'}<input id="p-amt" name="amount" inputmode="decimal" autocomplete="off" value="${left}" required></label>
+ <div class="chips"><button type="button" class="chip" data-act="pay-fill" data-v="${left}">Весь остаток</button><button type="button" class="chip" data-act="pay-fill" data-v="${r2(left/2)}">Половина</button></div>
+ <div class="preview" id="p-rest"></div>
+ <label class="f">Дата оплаты<input id="p-d" type="date" name="date" value="${today()}"></label>
+ <button class="btn primary" type="submit">Записать оплату</button></form>`);
+ payForm.ctx={left,cur};updPay()}
+function updPay(){const a=$('#p-amt'),r=$('#p-rest'),c=payForm.ctx;if(!a||!r||!c)return;const v=parseAmt(a.value);r.textContent=!v?'':v>=c.left?'Долг будет закрыт полностью':`Останется в долгах: ${fmt(r2(c.left-v),c.cur)}`}
+function orderForm(){const c=cfg();openSheet(`<form data-form="order">${head('Новый заказ')}
+ <label class="f">Врач или клиника<input id="o-cl" name="client" list="dl-p2" required autocomplete="off"></label><datalist id="dl-p2">${parties().map(x=>`<option value="${esc(x)}">`).join('')}</datalist>
+ <div class="two"><label class="f">Работа<select id="o-svc" name="service">${opts(c.services,'Сплинт')}</select></label><label class="f">Канал<select id="o-ch" name="channel">${opts(c.channels,'Работы для врачей')}</select></label></div>
+ <label class="f">Цена<input id="f-amt" name="price" inputmode="decimal" required autocomplete="off" placeholder="120 или 1,5м"></label>${curSeg('USD')}<div class="preview" id="f-prev"></div>
+ <label class="f">Срок сдачи<input id="o-due" type="date" name="due"></label>
+ <label class="f">Заметка (пациент, ТЗ)<input id="o-note" name="note" autocomplete="off"></label>
+ <button class="btn primary" type="submit">Создать · +10 XP</button></form>`);updPrev()}
+function goalForm(){openSheet(`<form data-form="goal">${head('Новая цель')}
+ <label class="f">Что сделать<input id="g-t" name="title" required autocomplete="off"></label>
+ <div class="two"><label class="f">Сфера<select id="g-a" name="area">${Object.entries(AREAS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></label>
+ <label class="f">Фаза<select id="g-p" name="phase">${PHASES.map(p=>`<option value="${p.n}"${p.n===curPhase()?' selected':''}>${p.n} · ${esc(p.t)}</option>`).join('')}</select></label></div>
+ <label class="f">Вес цели<select id="g-x" name="xp"><option value="20">Мелочь · 20 XP</option><option value="40" selected>Обычная · 40 XP</option><option value="80">Крупная · 80 XP</option><option value="150">Веха · 150 XP</option></select></label>
+ <button class="btn primary" type="submit">Добавить</button></form>`)}
+function contentForm(){openSheet(`<form data-form="content">${head('Идея для контента')}
+ <label class="f">Тема<input id="c-t" name="title" required autocomplete="off" placeholder="Кейс: сплинт при щелчке ВНЧС"></label>
+ <label class="f">Канал<select id="c-ch" name="ch">${Object.entries(CH).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></label>
+ <label class="f">Заметка<input id="c-n" name="note" autocomplete="off"></label>
+ <button class="btn primary" type="submit">Добавить</button></form>`)}
+function woForm(plan){const P=PROGRAM[plan];openSheet(`<form data-form="wo">${head(esc(P.name))}<input type="hidden" name="plan" value="${plan}">
+ <p class="note" style="margin:0">Впишите повторы в каждом подходе. Пустые клетки не сохраняются.</p>
+ ${P.ex.map(e=>`<div class="ex"><div><b>${esc(e.n)}</b> <span class="meta">${e.sets} × ${esc(e.target)}</span></div><div class="reps">${Array.from({length:e.sets},(_,i)=>`<input id="r-${e.id}-${i}" name="r_${e.id}_${i}" inputmode="numeric" aria-label="${esc(e.n)}, подход ${i+1}" placeholder="${i+1}">`).join('')}</div></div>`).join('')}
+ <div class="two"><label class="f">Дата<input id="w-d" type="date" name="date" value="${today()}"></label><label class="f">Самочувствие<input id="w-n" name="note" autocomplete="off"></label></div>
+ <button class="btn primary" type="submit">Сохранить · +30 XP</button></form>`)}
+function settingsForm(){const c=cfg();openSheet(`<form data-form="settings">${head('Настройки')}
+ <div class="two"><label class="f">Курс: сум за $1<input id="s-r" name="rate" inputmode="decimal" value="${c.rate}"></label><label class="f">Цель дохода в месяц, сум<input id="s-g" name="incomeGoal" inputmode="decimal" value="${c.incomeGoal}"></label></div>
+ <div class="two"><label class="f">Старт программы<input id="s-s" type="date" name="start" value="${c.start}"></label><label class="f">Оплаты пациентов в доходе с<input id="s-pf" type="date" name="patientsFrom" value="${c.patientsFrom}"></label></div>
+ <label class="f">Привычки, по одной в строке<textarea id="s-h" name="habits">${esc(c.habits.map(h=>h.n).join('\n'))}</textarea></label>
+ <label class="f">Распорядок: время | дело | дни (1 = пн … 7 = вс)<textarea id="s-rt" name="routine">${esc((c.routine||[]).map(r=>`${r.t} | ${r.n} | ${r.d}`).join('\n'))}</textarea></label>
+ <label class="f">Каналы дохода<textarea id="s-ch" name="channels">${esc(c.channels.join('\n'))}</textarea></label>
+ <label class="f">Услуги<textarea id="s-sv" name="services">${esc(c.services.join('\n'))}</textarea></label>
+ <label class="f">Статьи расходов<textarea id="s-ec" name="expCats">${esc(c.expCats.join('\n'))}</textarea></label>
+ <label class="f">Из них рабочие (остальное считается личным)<textarea id="s-bc" name="bizCats">${esc(c.bizCats.join('\n'))}</textarea></label>
+ <button class="btn primary" type="submit">Сохранить</button></form><div class="more" id="more">${moreHTML()}</div>`)}
+
+/* ---------- patients: treatment total, payments by date, balance ----------
+   history[] = payments before patientsFrom (kept on the patient, never in income);
+   from patientsFrom on, a payment is a tx income with patientId, so it lands in stats */
+let patQ='',patF='all';
+const dmyy=s=>s?s.slice(8,10)+'.'+s.slice(5,7)+'.'+s.slice(2,4):'';
+const patFrom=()=>cfg().patientsFrom||DEF.patientsFrom;
+const patTx=p=>S.tx.filter(x=>x.patientId===p.id&&x.type==='in');
+/* a patient payment tx stores amount = my part (what counts as income), gross = whole payment, lab/ref = parts passed on */
+const patPays=p=>[...(p.history||[]).map((y,i)=>({date:y.date||'',amount:+y.amount||0,lab:y.lab,ref:y.ref,note:y.note||'',old:true,i})),
+ ...patTx(p).map(x=>{const g=x.gross!=null;return {date:x.date,amount:g?+x.gross:recv(x),lab:g?x.lab:undefined,ref:g?x.ref:undefined,note:x.note&&!/^Оплата пациента/.test(x.note)?x.note:'',old:false,txId:x.id}})].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+const patPaid=p=>r2(patPays(p).reduce((a,y)=>a+y.amount,0));
+const patLeft=p=>Math.max(0,r2((+p.total||0)-patPaid(p)));
+const short=(v,cur)=>cur==='USD'?'$'+nf0.format(v||0):fmtU(v||0);
+/* split: total − lab (техничка) − referring doctor's share = my share */
+const REF_MODES=[['pctNet','% после технички'],['pctTotal','% от всей суммы'],['fixed','Сумма']];
+const calcRef=(t,l,mode,v)=>r2(mode==='fixed'?v:mode==='pctTotal'?t*v/100:Math.max(0,t-l)*v/100);
+const patLab=p=>+p.lab||0;
+const patRef=p=>+p.refVal?calcRef(+p.total||0,patLab(p),p.refMode||'pctNet',+p.refVal):0;
+const patMine=p=>r2((+p.total||0)-patLab(p)-patRef(p));
+/* where a payment went: stored split, or proportional to the patient's shares when none was given */
+function allocOf(p,y){if(y.lab!=null||y.ref!=null){const lab=+y.lab||0,ref=+y.ref||0;return {lab,ref,mine:r2(y.amount-lab-ref),auto:false}}
+ const t=+p.total||0,lab=t?r2(y.amount*patLab(p)/t):0,ref=t?r2(y.amount*patRef(p)/t):0;return {lab,ref,mine:r2(y.amount-lab-ref),auto:!!(lab||ref)}}
+function patAlloc(p){const s={lab:0,ref:0,mine:0,auto:false};for(const y of patPays(p)){const a=allocOf(p,y);s.lab+=a.lab;s.ref+=a.ref;s.mine+=a.mine;s.auto=s.auto||a.auto}s.lab=r2(s.lab);s.ref=r2(s.ref);s.mine=r2(s.mine);return s}
+const refLabel=p=>!+p.refVal?'':p.refMode==='fixed'?'фиксированная сумма':`${nf1.format(+p.refVal)}% ${p.refMode==='pctTotal'?'от всей суммы':'от суммы после технички'}`;
+const patCh=()=>{const ch=cfg().channels||[];return ch.find(x=>/пациент/i.test(x))||ch[0]||'Пациенты (своя практика)'};
+/* ---------- visits + Calendar (.ics) ----------
+   patient.visit = {date, time, eventId} (next planned visit), patient.visits = [{date, note}] (done),
+   patient.every = months until the next visit (braces default 1). The app is the source; a visit goes to
+   the phone's Calendar as an .ics file with UID lifeos-<patientId>-<date>, so a repeated file for the same
+   date updates the event instead of adding a second one. eventId (from the Google Calendar days) is kept, unused. */
+const isBraces=s=>/брекет/i.test(s||'');
+const EVERY=[[0,'Не назначать'],[0.5,'Через 2 недели'],[1,'Через месяц'],[1.5,'Через 6 недель'],[2,'Через 2 месяца'],[3,'Через 3 месяца']];
+const pEvery=p=>p.every!=null?+p.every:(isBraces(p.service)?1:0);
+const everyLabel=n=>(EVERY.find(x=>x[0]===+n)||EVERY[0])[1];
+const WD=['вс','пн','вт','ср','чт','пт','сб'];
+const addMonths=(s,n)=>{n=+n;if(!n)return s;if(n===0.5)return addDays(s,14);if(n===1.5)return addDays(s,42);const d=new Date(s+'T12:00:00'),day=d.getDate();d.setDate(1);d.setMonth(d.getMonth()+n);d.setDate(Math.min(day,new Date(d.getFullYear(),d.getMonth()+1,0).getDate()));return iso(d)};
+const visitLabel=v=>v&&v.date?`${dmy(v.date)} ${WD[new Date(v.date+'T12:00:00').getDay()]}${v.time?' · '+v.time:''}`:'';
+const inDays=d=>{const n=daysBetween(today(),d);return n===0?'сегодня':n===1?'завтра':n<0?`${-n} дн. назад`:`через ${n} дн.`};
+const firstVisit=p=>{if(p.start&&p.start<today()){let d=p.start,k=0;while(d<=today()&&k<120){k++;d=addMonths(p.start,k)}return d}return addMonths(today(),1)};
+const tAdd=(t,min)=>{let[h,m]=t.split(':').map(Number);m+=min;h+=Math.floor(m/60);m%=60;if(h>23){h=23;m=59}return pad(h)+':'+pad(m)};
+let visAll=false;
+function evInput(p,v){const all=!v.time;return {summary:`🦷 Визит: ${p.name}${p.service?` (${String(p.service).toLowerCase()})`:''}`,
+ startTime:all?`${v.date}T00:00:00`:`${v.date}T${v.time}:00`,endTime:all?`${addDays(v.date,1)}T00:00:00`:`${v.date}T${tAdd(v.time,30)}:00`,allDay:all,
+ availability:all?'AVAILABILITY_FREE':'AVAILABILITY_BUSY',
+ description:`Визит пациента.${p.phone?' Телефон: '+p.phone+'.':''}${p.note?'\n'+p.note:''}\n\nLife OS · пациент ${p.id}`,
+ overrideReminders:[{method:'popup',minutes:all?900:60}]}}
+/* .ics with the same content as evInput: all-day → reminder the day before at 9:00, timed → 30 minutes, reminder an hour before */
+const icsEsc=s=>String(s).replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\r?\n/g,'\\n');
+function icsFold(line){const enc=new TextEncoder(),parts=[];let cur='',n=0,lim=75;
+ for(const ch of line){const b=enc.encode(ch).length;if(n+b>lim){parts.push(cur);cur='';n=0;lim=74}cur+=ch;n+=b}parts.push(cur);return parts.join('\r\n ')}
+const icsUTC=d=>d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
+function icsVEvent(p,v){const e=evInput(p,v),r=e.overrideReminders[0].minutes;
+ return ['BEGIN:VEVENT',`UID:lifeos-${p.id}-${v.date}`,`DTSTAMP:${icsUTC(new Date())}`,`SEQUENCE:${Math.floor(Date.now()/1000)-1700000000}`,
+  e.allDay?`DTSTART;VALUE=DATE:${v.date.replace(/-/g,'')}`:`DTSTART:${icsUTC(new Date(e.startTime))}`,
+  e.allDay?`DTEND;VALUE=DATE:${addDays(v.date,1).replace(/-/g,'')}`:`DTEND:${icsUTC(new Date(e.endTime))}`,
+  `SUMMARY:${icsEsc(e.summary)}`,`DESCRIPTION:${icsEsc(e.description)}`,`TRANSP:${e.allDay?'TRANSPARENT':'OPAQUE'}`,
+  'BEGIN:VALARM','ACTION:DISPLAY',`DESCRIPTION:${icsEsc(e.summary)}`,`TRIGGER:-PT${r}M`,'END:VALARM','END:VEVENT']}
+const calPats=ids=>ids.map(id=>S.patients.find(p=>p.id===id)).filter(p=>p&&p.visit&&p.visit.date);
+function icsFor(ids){return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Life OS Аброра//RU','CALSCALE:GREGORIAN','METHOD:PUBLISH',
+ ...calPats(ids).flatMap(p=>icsVEvent(p,p.visit)),'END:VCALENDAR'].map(icsFold).join('\r\n')+'\r\n'}
+/* the sheet behind "Добавить в календарь": the data: link opens Safari's "add event" screen, sharing the file is the fallback */
+function calHTML(ids){const ps=calPats(ids);if(!ps.length)return head('Добавить в календарь')+'<div class="empty">Визит не назначен.</div>';
+ return head(ps.length>1?`В календарь: ${pl(ps.length,['визит','визита','визитов'])}`:'Добавить в календарь')
+  +fbox(ps.map(p=>[p.name,esc(visitLabel(p.visit))]),null,ps.some(p=>!p.visit.time)?'Без времени визит стоит в календаре на весь день, напоминание накануне в 9:00. Со временем — на 30 минут, напоминание за час.':'Визит на 30 минут, напоминание за час.')
+  +`<a class="btn primary" href="data:text/calendar;charset=utf-8,${encodeURIComponent(icsFor(ps.map(p=>p.id)))}">Добавить в календарь</a>
+  <button type="button" class="btn wide" data-act="ics-share" data-v="${esc(ps.map(p=>p.id).join(','))}">Поделиться файлом .ics</button>
+  <p class="note" style="margin:0">Повторный файл на ту же дату обновит событие, а не создаст второе. Если визит перенесён на другой день или убран, старое событие удалите в Календаре.</p>`}
+async function shareIcs(ids){const ps=calPats(ids);if(!ps.length)return;
+ const f=new File([icsFor(ps.map(p=>p.id))],(ps.length===1?'визит-'+ps[0].visit.date:'визиты')+'.ics',{type:'text/calendar'});
+ if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f]})}catch(e){}return}
+ saveFile(f)}
+function saveFile(f){const u=URL.createObjectURL(f),a=document.createElement('a');a.href=u;a.download=f.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000)}
+function setVisit(pid,v,every){const p=S.patients.find(z=>z.id===pid);if(!p)return;const old=(p.visit||{}).eventId||'',nv={date:v.date||'',time:v.time||'',eventId:old};
+ updDoc('patients',pid,{visit:nv,...(every!=null?{every}:{})});toast(v.date?`Визит ${visitLabel(nv)} сохранён. Добавьте его в календарь кнопкой в карточке`:'Визит убран. Если он был в Календаре, удалите событие там')}
+function visitDone(pid){const p=S.patients.find(z=>z.id===pid);if(!p)return;const v=p.visit||{},ev=pEvery(p),t=today();
+ const next=ev?{date:addMonths(t,ev),time:v.time||'',eventId:''}:{date:'',time:'',eventId:''};
+ updDoc('patients',pid,{visits:[...(p.visits||[]),{date:t}],visit:next});
+ toast(next.date?`Визит отмечен. Следующий: ${visitLabel(next)}. Добавьте его в календарь кнопкой ниже`:'Визит отмечен');schedule()}
+function bulkVisits(){const a=S.patients.filter(p=>isBraces(p.service)&&!(p.visit&&p.visit.date));
+ for(const p of a)updDoc('patients',p.id,{visit:{date:firstVisit(p),time:'',eventId:''},every:pEvery(p)});
+ toast(`Визиты назначены: ${a.length}`);if(a.length)setTimeout(()=>openDrill({k:'cal-all',v:a.map(p=>p.id).join(',')}),0);schedule()}
+function visitsSection(){const ps=S.patients,up=ps.filter(p=>p.visit&&p.visit.date).sort((a,b)=>(a.visit.date+(a.visit.time||'')).localeCompare(b.visit.date+(b.visit.time||''))),
+ nv=ps.filter(p=>isBraces(p.service)&&!(p.visit&&p.visit.date)),sh=visAll?up:up.slice(0,8);
+ const fut=up.filter(p=>p.visit.date>=today());
+ return `<section class="sec"><div class="sec-h"><h2>Визиты</h2>${fut.length?`<button class="btn sm" data-act="drill" data-k="cal-all" data-v="${esc(fut.map(p=>p.id).join(','))}">Все в календарь</button>`:''}</div>
+ <div class="list">${sh.length?sh.map(p=>{const late=p.visit.date<today();return `<button type="button" class="item" style="background:none;border:0;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer" data-act="drill" data-k="pat" data-v="${esc(p.id)}"><span class="time" style="width:58px">${dmy(p.visit.date)}<br>${WD[new Date(p.visit.date+'T12:00:00').getDay()]}${p.visit.time?' '+p.visit.time:''}</span><div class="grow"><div class="t">${esc(p.name)}</div><div class="meta">${late?'<span class="tag debt">дата прошла: отметьте визит</span>':inDays(p.visit.date)}</div></div></button>`}).join(''):'<div class="empty">Визитов пока нет. У пациентов на брекетах следующий визит ставится через месяц.</div>'}</div>
+ ${up.length>8?`<button class="btn sm" data-act="vis-all">${visAll?'Свернуть':`Показать все (${up.length})`}</button>`:''}
+ ${nv.length?`<button class="btn wide" data-act="vis-bulk">Назначить визит через месяц: ${pl(nv.length,['пациент','пациента','пациентов'])} на брекетах без даты</button>`:''}</section>`}
+function visitBlock(p){const v=p.visit||{},ev=pEvery(p),past=(p.visits||[]).slice(-6).reverse();
+ return `<div class="formula"><div class="frow"><span>Следующий визит</span><span class="num">${v.date?visitLabel(v):'не назначен'}</span></div>
+ <div class="frow"><span>После визита</span><span>${esc(everyLabel(ev))}</span></div>
+ ${v.date&&v.date<today()?'<div class="note">Дата прошла: отметьте визит или перенесите.</div>':''}
+ <div style="display:flex;gap:8px;flex-wrap:wrap">${v.date?`<button type="button" class="btn sm" data-act="drill" data-k="cal" data-v="${esc(p.id)}">Добавить в календарь</button>`:''}${v.date||ev?`<button type="button" class="btn sm" data-act="vis-done" data-id="${esc(p.id)}">Визит прошёл${ev?' → следующий':''}</button>`:''}<button type="button" class="btn sm" data-act="vis-edit" data-id="${esc(p.id)}">${v.date?'Перенести / изменить':'Назначить визит'}</button></div>
+ ${past.length?`<div class="meta">Прошлые визиты: ${past.map(x=>dmyy(x.date)).join(', ')}</div>`:''}</div>`}
+function visitForm(pid){const p=S.patients.find(z=>z.id===pid);if(!p)return;const v=p.visit||{};
+ openSheet(`<form data-form="visit">${head('Визит · '+esc(p.name))}<input type="hidden" name="id" value="${esc(pid)}">
+ <div class="two"><label class="f">Дата<input id="v-d" type="date" name="date" value="${esc(v.date||'')}"></label><label class="f">Время, если знаете<input id="v-t" type="time" name="time" value="${esc(v.time||'')}"></label></div>
+ <div class="chips"><button type="button" class="chip" data-act="v-plus" data-n="7">Через неделю</button><button type="button" class="chip" data-act="v-plus" data-n="14">Через 2 недели</button><button type="button" class="chip" data-act="v-plus" data-n="m1">Через месяц</button></div>
+ <label class="f">После этого визита следующий<select id="v-e" name="every">${EVERY.map(([k,n])=>`<option value="${k}"${k===pEvery(p)?' selected':''}>${n}</option>`).join('')}</select></label>
+ <div class="note">Без времени визит стоит в календаре на весь день, напоминание накануне в 9:00. Со временем — на 30 минут, напоминание за час.</div>
+ <button class="btn primary" type="submit">Сохранить</button>
+ ${v.date?`<button type="button" class="btn wide danger" data-act="vis-clear" data-id="${esc(pid)}">Убрать визит</button>`:''}</form>`)}
+function vPatients(c){const ps=S.patients,from=patFrom();
+ const tot=ps.reduce((a,p)=>a+toU(p.total,p.cur,c),0),paid=ps.reduce((a,p)=>a+toU(patPaid(p),p.cur,c),0),left=ps.reduce((a,p)=>a+toU(patLeft(p),p.cur,c),0),nd=ps.filter(p=>patLeft(p)>0).length;
+ const mine=ps.reduce((a,p)=>a+toU(patMine(p),p.cur,c),0),refs=ps.reduce((a,p)=>a+toU(patRef(p),p.cur,c),0),labs=ps.reduce((a,p)=>a+toU(patLab(p),p.cur,c),0),nr=new Set(ps.filter(p=>patRef(p)>0).map(p=>p.ref||'Без имени')).size;
+ const sumCol=f=>fmtU(list.reduce((a,p)=>a+toU(f(p),p.cur,c),0));
+ const list=ps.filter(p=>patF==='all'||(patF==='debt'?patLeft(p)>0:patLeft(p)===0)).sort((a,b)=>toU(patLeft(b),b.cur,c)-toU(patLeft(a),a.cur,c)||String(a.name).localeCompare(String(b.name),'ru'));
+ const q=patQ.toLowerCase();
+ return `<section class="sec"><div class="tiles">
+   <button type="button" class="tile" data-act="drill" data-k="pat-paid"><div class="k">Получено от пациентов</div><div class="v pos">${fmtU(paid)}</div><div class="s">из ${fmtU(tot)} по всем лечениям</div></button>
+   <button type="button" class="tile" data-act="drill" data-k="pat-left"><div class="k">Осталось получить</div><div class="v ${left?'neg':''}">${fmtU(left)}</div><div class="s">${pl(nd,['пациент','пациента','пациентов'])} с остатком</div></button>
+   <button type="button" class="tile" data-act="drill" data-k="pat-mine"><div class="k">Моя доля</div><div class="v" style="color:var(--accent)">${fmtU(mine)}</div><div class="s">техничка ${fmtU(labs)}</div></button>
+   <button type="button" class="tile" data-act="drill" data-k="pat-ref"><div class="k">Доля врачей</div><div class="v">${fmtU(refs)}</div><div class="s">${pl(nr,['врач','врача','врачей'])}</div></button></div>
+  <button class="btn primary" data-act="pat-new">+ Пациент</button>
+  <p class="note" style="margin:0">Оплаты до ${dmyy(from)} хранятся только в карточке пациента и в доход не входят. С ${dmyy(from)} каждая оплата пациента сама попадает в «Деньги».</p></section>
+ ${visitsSection()}
+ <section class="sec"><div class="sec-h"><h2>Все пациенты</h2><span class="meta">${ps.length}</span></div>
+  <input id="pat-q" type="search" placeholder="Поиск по ФИО" value="${esc(patQ)}" autocomplete="off" aria-label="Поиск по ФИО">
+  <div class="chips">${[['all','Все'],['debt','С остатком'],['done','Оплатили']].map(([k,n])=>`<button class="chip ${patF===k?'sel':''}" data-act="pat-f" data-f="${k}">${n}</button>`).join('')}</div>
+  <div class="card tbl-wrap" style="padding:0">${list.length?`<table class="pt"><thead><tr><th>ФИО и лечение</th><th>Визит</th><th>Итого</th><th>Техничка</th><th>Врачу</th><th>Моя доля</th><th>Оплачено</th><th>Остаток</th></tr></thead><tbody>${list.map(p=>{const l=patLeft(p),nm=String(p.name||'').toLowerCase(),rf=patRef(p);
+   return `<tr data-act="drill" data-k="pat" data-v="${esc(p.id)}" data-name="${esc(nm)}"${q&&!nm.includes(q)?' hidden':''}><td><button type="button" class="pn">${esc(p.name)}</button>${p.note||p.service||p.ref?`<div class="pc">${esc([p.service,p.ref?'от: '+p.ref:'',p.note].filter(Boolean).join(' · '))}</div>`:''}</td><td class="${p.visit&&p.visit.date&&p.visit.date<today()?'neg':''}">${p.visit&&p.visit.date?dmy(p.visit.date):'—'}</td><td>${short(p.total,p.cur)}</td><td>${patLab(p)?short(patLab(p),p.cur):'—'}</td><td>${rf?short(rf,p.cur):'—'}</td><td class="mine">${short(patMine(p),p.cur)}</td><td>${short(patPaid(p),p.cur)}</td><td class="${l?'neg':'ok'}">${l?short(l,p.cur):'✓'}</td></tr>`}).join('')}</tbody>
+   <tfoot><tr><td>Итого, сум</td><td></td><td>${sumCol(p=>p.total)}</td><td>${sumCol(patLab)}</td><td>${sumCol(patRef)}</td><td class="mine">${sumCol(patMine)}</td><td>${sumCol(patPaid)}</td><td>${sumCol(patLeft)}</td></tr></tfoot></table>`
+   :`<div class="empty">${ps.length?'Нет пациентов в этом фильтре.':'Пациентов пока нет. Нажмите «+ Пациент» и внесите ФИО, сумму лечения и сколько уже оплачено раньше.'}</div>`}</div></section>`}
+function patCard(id){const p=S.patients.find(z=>z.id===id);if(!p)return head('Пациент')+'<div class="empty">Пациент удалён.</div>';
+ const pays=patPays(p),paid=patPaid(p),left=patLeft(p);
+ return head(esc(p.name))+(p.phone?`<div class="meta">Телефон: <span style="user-select:all">${esc(p.phone)}</span></div>`:'')
+  +(p.note?`<div class="card" style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(p.note)}</div>`:'')
+  +visitBlock(p)
+  +fbox([['Вид лечения',esc(p.service||'—')],['Начало лечения',p.start?dmyy(p.start):'—'],['Итоговая сумма',fmt(p.total,p.cur)],['Техничка','− '+fmt(patLab(p),p.cur)],[p.ref?`Врачу: ${p.ref}`:'Доля врача','− '+fmt(patRef(p),p.cur)]],['Моя доля',fmt(patMine(p),p.cur)],
+   `Моя доля = итоговая сумма − техничка − доля врача${refLabel(p)?` (${refLabel(p)})`:''}.`)
+  +fbox([['Итоговая сумма',fmt(p.total,p.cur)],['Оплачено',fmt(paid,p.cur)]],['Осталось получить',fmt(left,p.cur)],left===0&&+p.total?'Лечение оплачено полностью.':'')
+  +((patLab(p)||patRef(p))?(()=>{const A=patAlloc(p);return `<div class="sec-h"><h2>Куда ушли полученные деньги</h2></div>`+fbox([['Техничке',`${fmt(A.lab,p.cur)} из ${fmt(patLab(p),p.cur)}`],[p.ref?`Врачу: ${p.ref}`:'Врачу',`${fmt(A.ref,p.cur)} из ${fmt(patRef(p),p.cur)}`],['Мне',`${fmt(A.mine,p.cur)} из ${fmt(patMine(p),p.cur)}`]],null,`Техничке осталось ${fmt(Math.max(0,r2(patLab(p)-A.lab)),p.cur)}, врачу ${fmt(Math.max(0,r2(patRef(p)-A.ref)),p.cur)}.${A.auto?' Где распределение не указано, оплата разделена пропорционально долям.':''}`)})():'')
+  +`<div style="display:flex;gap:8px;align-items:center"><button class="btn primary" style="flex:1;width:auto" data-act="pat-pay" data-id="${esc(p.id)}">+ Оплата</button><button class="btn" data-act="pat-edit" data-id="${esc(p.id)}">Изменить</button>${delBtn('pd'+p.id,'pat-del',p.id)}</div>`
+  +`<div class="sec-h"><h2>Оплаты по датам</h2><span class="meta">${pays.length}</span></div><div class="list">${pays.length?pays.map(y=>`<div class="item"><span class="time" style="width:64px">${y.date?dmyy(y.date):'—'}</span><div class="grow"><div class="t num">${fmt(y.amount,p.cur)}</div><div class="meta">${y.old?'до начала учёта, не в доходе':'в доходе за '+monL(y.date.slice(0,7))}${(()=>{const a=allocOf(p,y);return a.lab||a.ref?` · техничке ${fmt(a.lab,p.cur)}, врачу ${fmt(a.ref,p.cur)}, мне ${fmt(a.mine,p.cur)}${a.auto?' (пропорционально)':''}`:''})()}${y.note?' · '+esc(y.note):''}</div></div><button type="button" class="x-btn" data-act="pp-edit" data-id="${esc(p.id)}" data-w="${y.old?'h:'+y.i:'t:'+esc(y.txId)}" aria-label="Изменить оплату" title="Изменить">✎</button>${y.old?delBtn('ph'+p.id+'_'+y.i,'pat-hdel',p.id+'|'+y.i):delBtn('tx'+y.txId,'tx-del',y.txId)}</div>`).join(''):'<div class="empty">Оплат пока нет.</div>'}</div>`}
+function patForm(p){const c=cfg(),e=!!p;p=p||{};
+ openSheet(`<form data-form="pat">${head(e?'Изменить пациента':'Новый пациент')}<input type="hidden" name="id" value="${esc(p.id||'')}">
+ <label class="f">ФИО<input id="pt-n" name="name" required autocomplete="off" value="${esc(p.name||'')}"></label>
+ <label class="f">Телефон (необязательно)<input id="pt-ph" name="phone" inputmode="tel" autocomplete="off" value="${esc(p.phone||'')}"></label>
+ <div class="two"><label class="f">Вид лечения<select id="pt-s" name="service">${opts(c.services,p.service||'Брекеты')}</select></label><label class="f">Начало лечения<input id="pt-d" type="date" name="start" value="${esc(p.start||'')}"></label></div>
+ <label class="f">Итоговая сумма лечения<input id="f-amt" name="total" inputmode="decimal" required autocomplete="off" placeholder="например 12м или 1500" value="${p.total||''}"></label>${curSeg(p.cur||'UZS')}<div class="preview" id="f-prev"></div>
+ <label class="f">Сумма технички<input id="pt-lab" name="lab" inputmode="decimal" autocomplete="off" placeholder="0" value="${p.lab||''}"></label>
+ <label class="f">Врач, который направил (если есть)<input id="pt-ref" name="ref" list="dl-ref" autocomplete="off" value="${esc(p.ref||'')}"></label><datalist id="dl-ref">${[...new Set(S.patients.map(z=>z.ref).filter(Boolean))].map(x=>`<option value="${esc(x)}">`).join('')}</datalist>
+ <div class="f" style="display:grid;gap:5px;font-size:13px;color:var(--muted);font-weight:500">Доля врача
+ <div class="seg" role="radiogroup" aria-label="Как считать долю врача">${REF_MODES.map(([k,n])=>`<label><input type="radio" name="refMode" value="${k}" ${(p.refMode||'pctNet')===k?'checked':''}><span>${n}</span></label>`).join('')}</div>
+ <input id="pt-rv" name="refVal" inputmode="decimal" autocomplete="off" aria-label="Доля врача" placeholder="например 30 (процентов) или сумма" value="${p.refVal||''}"></div>
+ <div class="split" id="pt-split"></div>
+ <label class="f">Комментарий к лечению<textarea id="pt-c" name="note" placeholder="план, этап, аппарат, особенности">${esc(p.note||'')}</textarea></label>
+ ${e?'':`<div class="two"><label class="f">Следующий визит<input id="pt-v" type="date" name="visitDate" value="${isBraces(p.service||'Брекеты')?addMonths(today(),1):''}"></label><label class="f">Потом повторять<select id="pt-e" name="every">${EVERY.map(([k,n])=>`<option value="${k}"${k===(isBraces(p.service||'Брекеты')?1:0)?' selected':''}>${n}</option>`).join('')}</select></label></div><div class="note" style="margin-top:-4px">После сохранения визит можно добавить в Календарь кнопкой в карточке пациента. Точную дату можно поправить потом.</div>`}
+ ${e?'<div class="note">Оплаты и их распределение меняются в карточке пациента: кнопка «+ Оплата» и ✎ у каждой оплаты.</div>':`<div class="formula"><b>Уже оплачено раньше</b><div class="note">Не попадёт в доход и статистику, только в карточку пациента. Если оплат было несколько, внесите здесь общую сумму или добавьте каждую потом через «+ Оплата» с прошлой датой.</div><div class="two"><label class="f">Сумма<input id="pt-o" name="opening" inputmode="decimal" autocomplete="off" placeholder="0"></label><label class="f">Дата, если помните<input id="pt-od" type="date" name="openingDate"></label></div>
+ <div id="op-split" hidden style="display:grid;gap:8px"><div style="font-weight:600">Как разделить эту сумму</div>
+  <div class="chips">${modeChips('op-mode','prop')}</div>
+  <div class="two"><label class="f">Техничке<input id="op-lab" name="openLab" inputmode="decimal" autocomplete="off" placeholder="0"></label><label class="f">Врачу<input id="op-ref" name="openRef" inputmode="decimal" autocomplete="off" placeholder="0"></label></div>
+  <div class="frow total"><span>Мне</span><span class="num" id="op-mine">—</span></div></div></div>`}
+ <button class="btn primary" type="submit">${e?'Сохранить':'Добавить пациента'}</button></form>`);opMode='prop';updPrev();updSplit()}
+const SPLIT_MODES=[['prop','Пропорционально'],['equal','Поровну'],['first','Сначала техничка и врач'],['mine','Всё мне']];
+/* "Поровну": equal parts between me and whoever else has a share (lab, doctor) */
+const eqParts=(v,hasLab,hasRef)=>{const n=1+(hasLab?1:0)+(hasRef?1:0),part=r2(v/n);return [hasLab?part:0,hasRef?part:0]};
+const modeChips=(act,sel)=>SPLIT_MODES.map(([k,n])=>`<button type="button" class="chip ${k===sel?'sel':''}" data-act="${act}" data-m="${k}">${n}</button>`).join('');
+/* split of the "already paid" amount in the new-patient form, from the shares typed above it */
+let opMode='prop';
+function updOpen(){const box=$('#op-split');if(!box)return;const o=parseAmt(($('#pt-o')||{}).value);box.hidden=!o;if(!o)return;
+ const t=parseAmt($('#f-amt').value),l=Math.min(parseAmt($('#pt-lab').value),t),v=parseAmt($('#pt-rv').value),
+  mode=(document.querySelector('input[name=refMode]:checked')||{}).value||'pctNet',r=v?calcRef(t,l,mode,v):0,cur=(document.querySelector('input[name=cur]:checked')||{}).value,L=$('#op-lab'),R=$('#op-ref');
+ if(opMode!=='manual'){let a=0,b=0;if(opMode==='equal'){[a,b]=eqParts(o,l>0,r>0)}else if(opMode==='first'){a=Math.min(o,l);b=Math.min(o-a,r)}else if(opMode==='prop'&&t){a=Math.min(o*l/t,l);b=Math.min(o*r/t,r)}L.value=r2(a)||'';R.value=r2(b)||''}
+ const m=r2(o-parseAmt(L.value)-parseAmt(R.value)),me=$('#op-mine');me.textContent=fmt(m,cur);me.style.color=m<0?'var(--red)':''}
+function updSplit(){const el=$('#pt-split');if(!el)return;const t=parseAmt(($('#f-amt')||{}).value),l=parseAmt(($('#pt-lab')||{}).value),v=parseAmt(($('#pt-rv')||{}).value),
+ mode=(document.querySelector('input[name=refMode]:checked')||{}).value||'pctNet',cur=(document.querySelector('input[name=cur]:checked')||{}).value;
+ if(!t){el.textContent='';return}const r=v?calcRef(t,l,mode,v):0;el.textContent=`Техничка ${fmt(l,cur)} · врачу ${fmt(r,cur)} · моя доля ${fmt(r2(t-l-r),cur)}`}
+function prefillRef(){const n=(($('#pt-ref')||{}).value||'').trim(),rv=$('#pt-rv');if(!n||!rv||rv.value)return;
+ const prev=[...S.patients].reverse().find(z=>z.ref===n&&+z.refVal);if(!prev)return;rv.value=prev.refVal;const m=document.querySelector(`input[name=refMode][value="${prev.refMode||'pctNet'}"]`);if(m)m.checked=true;updSplit()}
+/* w = which existing payment to edit: "h:<index>" (history) or "t:<txId>" */
+function patPayForm(id,w){const p=S.patients.find(z=>z.id===id);if(!p)return;
+ const y=w?patPays(p).find(z=>w[0]==='h'?z.old&&String(z.i)===w.slice(2):!z.old&&z.txId===w.slice(2)):null;if(w&&!y)return;
+ const ya=y?allocOf(p,y):{lab:0,ref:0},A=patAlloc(p),left=r2(patLeft(p)+(y?y.amount:0)),split=patLab(p)>0||patRef(p)>0||!!(ya.lab||ya.ref),
+  labLeft=Math.max(0,r2(patLab(p)-(A.lab-ya.lab))),refLeft=Math.max(0,r2(patRef(p)-(A.ref-ya.ref)));
+ openSheet(`<form data-form="patpay">${head((y?'Изменить оплату · ':'Оплата · ')+esc(p.name))}<input type="hidden" name="id" value="${esc(id)}"><input type="hidden" name="w" value="${esc(w||'')}">
+ <div class="formula"><div class="frow"><span>Сумма лечения</span><span class="num">${fmt(p.total,p.cur)}</span></div><div class="frow"><span>Оплачено</span><span class="num">${fmt(patPaid(p),p.cur)}</span></div><div class="frow total"><span>Осталось</span><span class="num">${fmt(left,p.cur)}</span></div></div>
+ <label class="f">Сумма, ${p.cur==='USD'?'$':'сум'}<input id="pp-a" name="amount" inputmode="decimal" required autocomplete="off" placeholder="например 1м" value="${y?y.amount:''}"></label>
+ ${split?`<div class="formula"><b>Куда уходит эта оплата</b>
+  <div class="chips">${modeChips('pp-mode',y?'':'prop')}</div>
+  <div class="two"><label class="f">Техничке<input id="pp-lab" name="lab" inputmode="decimal" autocomplete="off" placeholder="0" value="${y&&ya.lab?ya.lab:''}"></label><label class="f">${p.ref?'Врачу: '+esc(p.ref):'Врачу'}<input id="pp-ref" name="ref" inputmode="decimal" autocomplete="off" placeholder="0" value="${y&&ya.ref?ya.ref:''}"></label></div>
+  ${y&&ya.auto?'<div class="note">Сейчас эта оплата разделена пропорционально автоматически. Исправьте суммы или выберите способ выше.</div>':''}
+  <div class="frow total"><span>Мне</span><span class="num" id="pp-mine">—</span></div>
+  <div class="note">Ещё причитается: техничке ${fmt(labLeft,p.cur)}, врачу ${fmt(refLeft,p.cur)}. В доход записывается только ваша часть.</div></div>`:''}
+ <label class="f">Дата оплаты${y&&!y.date?' (не указана)':''}<input id="pp-d" type="date" name="date" value="${y?esc(y.date||''):today()}"></label>
+ <div class="preview" id="pp-prev"></div>
+ <label class="f">Заметка<input id="pp-n" name="note" autocomplete="off" placeholder="например: 3-я активация" value="${esc(y?y.note:'')}"></label>
+ <button class="btn primary" type="submit">${y?'Сохранить':'Записать оплату'}</button></form>`);patPayForm.ctx={left,cur:p.cur,split,labLeft,refLeft,hasLab:patLab(p)>0,hasRef:patRef(p)>0,rl:+p.total?patLab(p)/(+p.total):0,rr:+p.total?patRef(p)/(+p.total):0,mode:y?'manual':'prop'};updPatPay()}
+function ppSplit(c,v){if(c.mode==='mine')return [0,0];if(c.mode==='equal')return eqParts(v,c.hasLab,c.hasRef);if(c.mode==='first'){const l=Math.min(v,c.labLeft);return [r2(l),r2(Math.min(v-l,c.refLeft))]}
+ /* proportional to what is still owed, so the last payment closes every share exactly */
+ const rl=c.left>0?c.labLeft/c.left:c.rl,rr=c.left>0?c.refLeft/c.left:c.rr;
+ return [r2(Math.min(v*rl,c.labLeft)),r2(Math.min(v*rr,c.refLeft))]}
+function updPatPay(){const a=$('#pp-a'),d=$('#pp-d'),r=$('#pp-prev'),c=patPayForm.ctx;if(!a||!r||!c)return;const v=parseAmt(a.value),dt0=d?d.value:today(),dt=dt0||'0000-00-00',from=patFrom();
+ let mineV=v;if(c.split){const L=$('#pp-lab'),R=$('#pp-ref');if(c.mode!=='manual'){const[l,rf]=ppSplit(c,v);L.value=v?(l||''):'';R.value=v?(rf||''):''}
+  mineV=r2(v-parseAmt(L.value)-parseAmt(R.value));const m=$('#pp-mine');m.textContent=v?fmt(mineV,c.cur):'—';m.style.color=mineV<0?'var(--red)':''}
+ r.textContent=(dt<from?`${dt0?`Дата до ${dmyy(from)}`:'Без даты'}: оплата сохранится в карточке пациента, в доход не войдёт.`:`В доход за ${monL(dt.slice(0,7))} войдёт ${v?fmt(Math.max(0,mineV),c.cur):'ваша часть'}.`)+(v?` Пациенту останется оплатить: ${fmt(Math.max(0,r2(c.left-v)),c.cur)}.`:'')}
+
+/* ---------- drill-down: tap a number, see what it is made of ---------- */
+let drillState=null;
+const pl=(n,w=['запись','записи','записей'])=>{const a=n%10,b=n%100;return n+' '+(a===1&&b!==11?w[0]:a>=2&&a<=4&&(b<12||b>14)?w[1]:w[2])};
+const monL=mo=>{const[y,m]=String(mo).split('-');return (MON[+m-1]||'')+' '+y};
+const da=(k,m,v)=>`data-k="${k}"${m?` data-m="${m}"`:''}${v!=null?` data-v="${esc(v)}"`:''}`;
+function fbox(lines,total,note){return `<div class="formula">${lines.map(([l,v,d])=>`<div class="frow">${d?`<button type="button" class="linkbtn" data-act="drill" ${d}>${esc(l)}</button>`:`<span>${esc(l)}</span>`}<span class="num">${v}</span></div>`).join('')}${total?`<div class="frow total"><span>${esc(total[0])}</span><span class="num">${total[1]}</span></div>`:''}${note?`<div class="note">${note}</div>`:''}</div>`}
+function amtCell(v,cur,sign,cls){const c=cfg();return `<div class="amt"><div class="num ${cls||''}" style="font-weight:600;white-space:nowrap">${sign||''}${fmt(v,cur)}</div>${cur==='USD'?`<div class="meta num">≈ ${fmt(toU(v,'USD',c),'UZS')}</div>`:''}</div>`}
+function txRows(a){const s=[...a].sort((p,q)=>(q.date||'').localeCompare(p.date||'')||(q.createdAt||0)-(p.createdAt||0));let last='';
+ return `<div class="list">${s.length?s.map(x=>{const hd=x.date!==last?`<div class="dayhead">${dmy(x.date)}</div>`:'';last=x.date;const isIn=x.type==='in';
+  return hd+`<div class="item"><div class="grow"><div class="t">${esc(isIn?(x.service||x.channel):x.cat)}${payTag(x)}</div><div class="meta">${esc([isIn?x.channel:'',x.party,x.note,payMeta(x)].filter(Boolean).join(' · '))}</div></div>${amtCell(x.amount,x.cur,isIn?'+':'−',isIn?'pos':'neg')}</div>`}).join(''):'<div class="empty">Записей нет</div>'}</div>`}
+function ordRows(a){return `<div class="list">${a.length?a.map(o=>{const st=(ORDER_ST.find(s=>s[0]===o.status)||[])[1]||'';return `<div class="item"><div class="grow"><div class="t">${esc(o.client)} · ${esc(o.service)}</div><div class="meta">${esc(st)}${o.date?' · принят '+dmy(o.date):''}${o.due?' · срок '+dmy(o.due):''}</div></div>${amtCell(o.price,o.cur)}</div>`}).join(''):'<div class="empty">Пусто</div>'}</div>`}
+function woRows(a){const all=[...PROGRAM.A.ex,...PROGRAM.B.ex];return `<div class="list">${a.length?[...a].reverse().map(x=>`<div class="item"><span class="time">${dmy(x.date)}</span><div class="grow"><div class="t">День ${esc(x.plan)}${bestRep(x)?` · лучший подход ${bestRep(x)}`:''}</div><div class="meta">${esc((x.items||[]).map(i=>{const e=all.find(z=>z.id===i.id);return (e?e.n.split(',')[0]:i.id)+': '+(i.reps||[]).join('-')}).join(' · '))}</div></div><span class="xp">+30</span></div>`).join(''):'<div class="empty">Тренировок нет</div>'}</div>`}
+function ctRows(a){return `<div class="list">${a.length?a.map(x=>`<div class="item"><span class="time">${dmy(x.pubDate)}</span><div class="grow"><div class="t">${esc(x.title)}</div><div class="meta"><span class="tag">${esc(CH[x.ch]||x.ch)}</span></div></div><span class="xp">+${CONTENT_XP[x.ch]||25}</span></div>`).join(''):'<div class="empty">Публикаций нет</div>'}</div>`}
+function drillHTML(s){const c=cfg(),mo=s.m||month,v=s.v,ml=monL(mo),U=x=>fmt(x,'UZS');
+ const txm=S.tx.filter(x=>(x.date||'').startsWith(mo)),inc=txm.filter(x=>x.type==='in'),out=txm.filter(x=>x.type!=='in');
+ const sumU=a=>a.reduce((p,x)=>p+toU(x.amount,x.cur,c),0),group=(a,f)=>{const o={};for(const x of a){const k=f(x)||'Прочее';o[k]=(o[k]||0)+toU(x.amount,x.cur,c)}return Object.entries(o).sort((p,q)=>q[1]-p[1])};
+ const usd=a=>a.some(x=>x.cur==='USD')?` Доллары пересчитаны по курсу $1 = ${nf0.format(c.rate)} сум.`:'';
+ const ws=weekStart(),wsl=`с ${dmy(ws)}`;
+ const pubs=f=>S.content.filter(x=>x.status==='pub'&&(x.pubDate||'')>=ws&&(!f||x.ch===f)).sort((p,q)=>(q.pubDate||'').localeCompare(p.pubDate||''));
+ switch(s.k){
+ case 'inc':{const unp=inc.reduce((p,x)=>p+toU(rest(x),x.cur,c),0);
+  return head(`Доход · ${ml}`)+fbox(group(inc,x=>x.channel).map(([k,x])=>[k,U(x),da('ch',mo,k)]),['Итого доход',U(sumU(inc))],`${pl(inc.length)}.${unp?` Из них ещё не оплачено ${U(unp)}: это долги, они уже входят в доход.`:''}${usd(inc)}`)+`<div class="sec-h"><h2>Все поступления</h2></div>`+txRows(inc)}
+ case 'out':{const biz=sumU(out.filter(x=>(c.bizCats||[]).includes(x.cat)));
+  return head(`Расход · ${ml}`)+fbox(group(out,x=>x.cat).map(([k,x])=>[k,U(x),da('cat',mo,k)]),['Итого расход',U(sumU(out))],`${pl(out.length)}: на работу ${U(biz)}, личное ${U(sumU(out)-biz)}. Какие статьи считаются рабочими, задаётся в настройках.${usd(out)}`)+`<div class="sec-h"><h2>Все расходы</h2></div>`+txRows(out)}
+ case 'net':{const I=sumU(inc),O=sumU(out),unp=inc.reduce((p,x)=>p+toU(rest(x),x.cur,c),0);
+  return head(`Чистыми · ${ml}`)+fbox([['Доход',U(I),da('inc',mo)],['Расход','− '+U(O),da('out',mo)]],['Чистыми',U(I-O)],unp?`В доход входят долги клиентов: ${U(unp)}. Если считать только деньги, которые уже получены: ${U(I-unp-O)}.`:'Все доходы этого месяца уже получены.')+`<div class="sec-h"><h2>Все операции за месяц</h2></div>`+txRows(txm)}
+ case 'goal':{const g=+c.incomeGoal||0,got=sumU(inc),rest=Math.max(0,g-got),[y,mm]=mo.split('-').map(Number),dim=new Date(y,mm,0).getDate(),isCur=mo===today().slice(0,7),left=isCur?dim-(+today().slice(8,10))+1:0;
+  return head(`Цель дохода · ${ml}`)+fbox([['Цель месяца',U(g)],['Доход за месяц',U(got),da('inc',mo)]],['Осталось до цели',U(rest)],rest>0&&left>0?`Нужно в среднем ${U(rest/left)} в день до конца месяца (${left} дн.). Цель меняется в настройках.`:rest>0?'Месяц закончился без выполнения цели.':'Цель выполнена.')+`<div class="sec-h"><h2>Поступления</h2></div>`+txRows(inc)}
+ case 'ch':{const a=inc.filter(x=>(x.channel||'Прочее')===v);
+  return head(`${esc(v)} · ${ml}`)+fbox(group(a,x=>x.service).map(([k,x])=>[k,U(x)]),['Итого по каналу',U(sumU(a))],`${pl(a.length)}, ${sumU(inc)?Math.round(sumU(a)/sumU(inc)*100):0}% всего дохода за месяц.${usd(a)}`)+txRows(a)}
+ case 'svc':{const a=inc.filter(x=>(x.service||'Прочее')===v),unp=a.reduce((p,x)=>p+toU(rest(x),x.cur,c),0);
+  return head(`${esc(v)} · ${ml}`)+fbox([['Работ',String(a.length)],['В среднем за работу',a.length?U(sumU(a)/a.length):'—']],['Итого по услуге',U(sumU(a))],`${sumU(inc)?Math.round(sumU(a)/sumU(inc)*100):0}% всего дохода за месяц.${unp?` Ещё не оплачено ${U(unp)}.`:''}${usd(a)}`)+txRows(a)}
+ case 'cat':{const a=out.filter(x=>(x.cat||'Прочее')===v);
+  return head(`${esc(v)} · ${ml}`)+fbox([],['Итого по статье',U(sumU(a))],`${pl(a.length)}, ${sumU(out)?Math.round(sumU(a)/sumU(out)*100):0}% всех расходов за месяц. ${(c.bizCats||[]).includes(v)?'Считается рабочим расходом.':'Считается личным расходом.'}${usd(a)}`)+txRows(a)}
+ case 'debt':{const dl=debts(),tot=dl.reduce((p,d)=>p+toU(d.amount,d.cur,c),0);
+  return head('Вам должны')+fbox(dl.map(d=>[`${d.who} · ${d.what}`,fmt(d.amount,d.cur)]),['Итого долгов',U(tot)],'Здесь только остатки: доходы «В долг» или «Частично» и заказы в статусе «Сдан». Нажмите «Оплата», чтобы внести всю сумму или часть.')+`<div class="list">${dl.length?dl.map(d=>{const days=daysBetween(d.since||today(),today());return `<div class="item"><div class="grow"><div class="t">${esc(d.who)}</div><div class="meta">${esc(d.what)} · с ${dmy(d.since)} · ${days} дн.${d.got?` · получено ${fmt(d.got,d.cur)} из ${fmt(d.total,d.cur)}`:''}${days>30?' · <span class="tag debt">больше месяца</span>':''}</div></div>${amtCell(d.amount,d.cur)}<button class="btn sm" data-act="${d.kind==='tx'?'tx-paid':'ord-paid'}" data-id="${esc(d.id)}">Оплата</button></div>`}).join(''):'<div class="empty">Никто не должен.</div>'}</div>`}
+ case 'ord-open':case 'ord-done':{const a=S.orders.filter(o=>s.k==='ord-done'?o.status==='done':o.status!=='paid').sort((p,q)=>(p.due||'9').localeCompare(q.due||'9'));
+  const by=ORDER_ST.filter(st=>st[0]!=='paid').map(st=>[st[1],a.filter(o=>o.status===st[0])]).filter(x=>x[1].length);
+  return head(s.k==='ord-done'?'Сданы, ждут оплату':'Заказы в работе')+fbox(by.map(([n,l])=>[`${n} (${l.length})`,U(l.reduce((p,o)=>p+toU(o.price,o.cur,c),0))]),['Итого',U(a.reduce((p,o)=>p+toU(o.price,o.cur,c),0))],`${pl(a.length,['заказ','заказа','заказов'])}, отсортированы по сроку сдачи.${a.some(o=>o.cur==='USD')?` Доллары пересчитаны по курсу $1 = ${nf0.format(c.rate)} сум.`:''}`)+ordRows(a)}
+ case 'wo-week':case 'wo-all':{const a=sortedW().filter(x=>s.k==='wo-all'||x.date>=ws),pm=pullMax();
+  return head(s.k==='wo-all'?'Все тренировки':`Тренировки на неделе (${wsl})`)+fbox(s.k==='wo-all'?[['День A',String(a.filter(x=>x.plan==='A').length)],['День B',String(a.filter(x=>x.plan==='B').length)],['Рекорд подтягиваний',pm?String(pm):'—']]:[['Цель на неделю','3']],['Тренировок',String(a.length)],'Каждая тренировка даёт +30 XP. Лучший подход считается по прямому и обратному хвату.')+woRows(a)}
+ case 'pub-week':case 'pub-ig':case 'pub-tg':{const f=s.k==='pub-ig'?'ig':s.k==='pub-tg'?'tg':null,a=pubs(f);
+  return head(f?`${CH[f]} на неделе (${wsl})`:`Публикации на неделе (${wsl})`)+fbox(f?[['Цель на неделю','2']]:Object.keys(CH).map(k=>[CH[k],String(a.filter(x=>x.ch===k).length)]).filter(x=>x[1]!=='0'),['Опубликовано',String(a.length)],'Считаются материалы со статусом «Опубликовано» во вкладке «Контент».')+ctRows(a)}
+ case 'pat':return patCard(v);
+ case 'cal':case 'cal-all':return calHTML(String(v||'').split(',').filter(Boolean));
+ case 'pat-left':{const a=S.patients.filter(p=>patLeft(p)>0).sort((p,q)=>toU(patLeft(q),q.cur,c)-toU(patLeft(p),p.cur,c));
+  return head('Осталось получить от пациентов')+fbox(a.map(p=>[p.name,fmt(patLeft(p),p.cur),da('pat','',p.id)]),['Итого',U(a.reduce((x,p)=>x+toU(patLeft(p),p.cur,c),0))],a.length?'Остаток = сумма лечения − всё, что пациент уже оплатил, включая оплаты до начала учёта. Нажмите на имя, чтобы открыть карточку.':'Все пациенты оплатили лечение полностью.')}
+ case 'pat-mine':{const a=[...S.patients].sort((p,q)=>toU(patMine(q),q.cur,c)-toU(patMine(p),p.cur,c)),sm=f=>a.reduce((x,p)=>x+toU(f(p),p.cur,c),0);
+  return head('Моя доля по пациентам')+fbox([['Итоговые суммы',U(sm(p=>p.total))],['Техничка','− '+U(sm(patLab))],['Доля врачей','− '+U(sm(patRef)),da('pat-ref')]],['Моя доля',U(sm(patMine))],'Считается по договорённой сумме лечения, а не по уже полученным деньгам. Нажмите на пациента, чтобы открыть карточку.')
+   +`<div class="list">${a.length?a.map(p=>`<button type="button" class="item" style="background:none;border:0;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer" data-act="drill" data-k="pat" data-v="${esc(p.id)}"><div class="grow"><div class="t">${esc(p.name)}</div><div class="meta">итого ${fmt(p.total,p.cur)} · техничка ${fmt(patLab(p),p.cur)} · врачу ${fmt(patRef(p),p.cur)}</div></div><div class="amt"><div class="num mine" style="font-weight:600;white-space:nowrap;color:var(--accent)">${fmt(patMine(p),p.cur)}</div></div></button>`).join(''):'<div class="empty">Пациентов пока нет.</div>'}</div>`}
+ case 'pat-ref':{const g={};for(const p of S.patients){const r=patRef(p);if(!r)continue;const k=p.ref||'Без имени',o=(g[k]=g[k]||{v:0,got:0,n:0});o.v+=toU(r,p.cur,c);o.got+=toU(patAlloc(p).ref,p.cur,c);o.n++}
+  const e=Object.entries(g).sort((a,b)=>b[1].v-a[1].v);
+  return head('Доля врачей-направителей')+fbox(e.map(([k,o])=>[`${k} (${o.n})`,`${fmtU(o.got)} из ${fmtU(o.v)}`,da('pat-refdoc','',k)]),['Итого врачам',U(e.reduce((a,x)=>a+x[1].v,0))],e.length?`Из оплат пациентов врачам уже ушло ${U(e.reduce((a,x)=>a+x[1].got,0))}. Справа: ушло из всей доли. Нажмите на врача, чтобы увидеть пациентов.`:'Пока ни у одного пациента не указан врач и его доля.')}
+ case 'pat-refdoc':{const a=S.patients.filter(p=>(p.ref||'Без имени')===v&&patRef(p)>0);
+  return head(`Врач: ${esc(v)}`)+fbox(a.map(p=>[p.name,`${short(patAlloc(p).ref,p.cur)} из ${short(patRef(p),p.cur)}`,da('pat','',p.id)]),['Итого врачу',U(a.reduce((x,p)=>x+toU(patRef(p),p.cur,c),0))],a.length?`Справа: сколько уже ушло врачу из оплат пациента и его полная доля. Доля: ${esc(refLabel(a[a.length-1]))}.`:'')}
+ case 'pat-paid':{const from=patFrom(),rows=S.patients.flatMap(p=>patPays(p).map(y=>({...y,p}))).sort((x,y)=>(y.date||'').localeCompare(x.date||''));
+  const old=rows.filter(y=>y.old),nw=rows.filter(y=>!y.old),sm=a=>a.reduce((x,y)=>x+toU(y.amount,y.p.cur,c),0);
+  const al=rows.reduce((s,y)=>{const a=allocOf(y.p,y);s.lab+=toU(a.lab,y.p.cur,c);s.ref+=toU(a.ref,y.p.cur,c);s.mine+=toU(a.mine,y.p.cur,c);return s},{lab:0,ref:0,mine:0});
+  return head('Получено от пациентов')+fbox([[`До ${dmyy(from)} (не в доходе)`,U(sm(old))],[`С ${dmyy(from)}`,U(sm(nw))]],['Всего получено',U(sm(rows))],`${pl(rows.length,['оплата','оплаты','оплат'])} от ${pl(S.patients.length,['пациента','пациентов','пациентов'])}.`)
+   +fbox([['Ушло техничке',U(al.lab)],['Ушло врачам',U(al.ref),da('pat-ref')]],['Осталось мне',U(al.mine)],'С начала учёта в доход записывается только ваша часть.')
+   +`<div class="list">${rows.length?rows.map(y=>`<button type="button" class="item" style="background:none;border:0;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer" data-act="drill" data-k="pat" data-v="${esc(y.p.id)}"><span class="time" style="width:64px">${y.date?dmyy(y.date):'—'}</span><div class="grow"><div class="t">${esc(y.p.name)}</div><div class="meta">${y.old?'до начала учёта':'в доходе'}${y.note?' · '+esc(y.note):''}</div></div>${amtCell(y.amount,y.p.cur)}</button>`).join(''):'<div class="empty">Оплат пока нет.</div>'}</div>`}
+ case 'xp':{const st=stats(),pd=S.orders.filter(o=>o.status==='paid').length,hb=Object.keys(S.days).reduce((p,k)=>p+habitCount(k),0),gd=S.goals.filter(g=>g.done),pb=S.content.filter(x=>x.status==='pub');
+  const L=[['Операции в учёте',S.tx.length,5],['Заказы',S.orders.length,10],['Оплаченные заказы',pd,15],['Отметки привычек',hb,10],['Тренировки',S.workouts.length,30]];
+  const lines=L.map(([n,k,p])=>[`${n}: ${k} × ${p}`,nf0.format(k*p)]).concat([[`Закрытые цели: ${gd.length}`,nf0.format(gd.reduce((p,g)=>p+(+g.xp||40),0))],[`Публикации: ${pb.length}`,nf0.format(pb.reduce((p,x)=>p+(CONTENT_XP[x.ch]||25),0))]]);
+  const days=Array.from({length:14},(_,i)=>addDays(today(),-i));
+  return head('Как считаются очки')+fbox(lines,['Всего XP',nf0.format(st.xp)],'За публикацию: Instagram и Telegram +25, YouTube +80, книга +150, вебинар +200. За цель: её вес (20, 40, 80 или 150).')
+   +`<div class="sec-h"><h2>Уровни</h2></div><div class="list">${LEVELS.map((l,i)=>`<div class="item lvl-row ${i===st.li?'on':''}"><span class="time">${i+1}</span><div class="grow t">${esc(l[1])}${i===st.li?' · <span class="tag practice">вы здесь</span>':''}</div><span class="num meta">${i===st.li+1?`ещё ${nf0.format(l[0]-st.xp)} XP`:`от ${nf0.format(l[0])} XP`}</span></div>`).join('')}</div>`
+   +`<div class="sec-h"><h2>Серия: ${st.streak} дн. подряд</h2><span class="meta">день засчитан от 3 привычек</span></div><div class="list">${days.map(d=>{const n=habitCount(d);return `<div class="item"><span class="time">${dmy(d)}</span><div class="grow"><div class="bar ${n>=3?'good':''}"><i style="width:${n/Math.max(1,c.habits.length)*100}%"></i></div></div><span class="num meta">${n}/${c.habits.length}${n>=3?' ✓':''}</span></div>`}).join('')}</div>`}
+ }
+ return head('Подробности')+'<div class="empty">Нет данных</div>'}
+let drillStack=[];
+function renderDrill(first){if(!drillState)return;const sh=$('#sheet'),top=first?0:sh.scrollTop;
+ const html=(drillStack.length?'<button type="button" class="btn sm" data-act="drill-back" style="justify-self:start">← Назад</button>':'')+drillHTML(drillState);
+ const wrapH=`<div style="display:grid;gap:12px">${html}</div>`;
+ if(first){const st=drillState,stk=drillStack;openSheet(wrapH);drillState=st;drillStack=stk}else{sh.innerHTML=wrapH;sh.scrollTop=top}}
+function openDrill(d){if(drillState&&!$('#wrap').hidden)drillStack=[...drillStack,drillState];else drillStack=[];drillState={k:d.k,m:d.m||'',v:d.v};renderDrill(true)}
+function drillBack(){if(!drillStack.length)return;drillState=drillStack[drillStack.length-1];drillStack=drillStack.slice(0,-1);renderDrill(true)}
+
+/* ---------- backups: export / import, today's reminder ----------
+   Export = life-os-export/1 (format, app, exportedAt, timezone, counts, collections{col:{id:doc}}), the same
+   file the claude.ai version produced, so it loads back there. Import keeps the original ids: tx.orderId
+   and tx.patientId point at them. Before any replacement the current data is kept on the phone. */
+const EXP_ORDER=['settings','tx','orders','patients','goals','content','workouts','days'];
+const COL_RU={settings:'Настройки',tx:'Операции',orders:'Заказы',patients:'Пациенты',goals:'Цели',content:'Контент',workouts:'Тренировки',days:'Дни с привычками'};
+const dtL=ms=>{if(!ms)return '';const d=new Date(ms),t=pad(d.getHours())+':'+pad(d.getMinutes());return iso(d)===today()?'сегодня в '+t:dmyy(iso(d))+' в '+t};
+function liveCols(){const o={};for(const c of EXP_ORDER){const m={};for(const [id,d] of LDB.docs[c]||[])if(!d._deleted)m[id]=pub(d);o[c]=m}return o}
+const countOf=cols=>Object.fromEntries(EXP_ORDER.map(c=>[c,Object.values(cols[c]||{}).filter(d=>d&&!d._deleted).length]));
+const totalOf=cols=>Object.values(countOf(cols)).reduce((a,b)=>a+b,0);
+function exportObj(cols){return {format:'life-os-export/1',app:'Life OS Аброра',exportedAt:new Date().toISOString(),timezone:Intl.DateTimeFormat().resolvedOptions().timeZone,counts:countOf(cols),collections:cols,...(M.extra||{})}}
+async function doExport(){if(!db){toast('Хранилище недоступно');return}
+ const f=new File([JSON.stringify(exportObj(liveCols()),null,1)],`life-os-${today()}.json`,{type:'application/json'});
+ if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f]})}catch(e){if(e&&e.name==='AbortError')return;saveFile(f)}}
+ else saveFile(f);
+ await metaSet('lastBackup',{at:Date.now(),where:'file'});toast('Резервная копия готова');refreshMore();render()}
+/* collections from a file: {id:doc} (or [{id,…}]); sync-only fields and deleted documents are dropped */
+function normCols(src){const out={};for(const c of EXP_ORDER){const v=src&&src[c],m={};
+  if(Array.isArray(v)){for(const d of v)if(d&&d.id!=null){const x={...d};delete x.id;m[String(d.id)]=x}}
+  else if(v&&typeof v==='object')for(const [id,d] of Object.entries(v))if(d&&typeof d==='object')m[id]=d;
+  for(const id in m){if(m[id]._deleted)delete m[id];else m[id]=pub(m[id])}out[c]=m}return out}
+function readImport(file){file.text().then(t=>{let j;try{j=JSON.parse(t)}catch(e){toast('Это не файл Life OS');return}
+ if(j&&j.format==='life-os-encrypted/1'){toast('Файл зашифрован. Восстановите его через «Копии на Диске»');return}
+ if(!j||j.format!=='life-os-export/1'||!j.collections){toast('Это не выгрузка Life OS (нужен формат life-os-export/1)');return}
+ const cols=normCols(j.collections),extra={};for(const k in j)if(!['format','app','exportedAt','timezone','counts','collections','sync'].includes(k))extra[k]=j[k];
+ confirmReplace({title:'Импорт',colA:'В файле',cols,extra,why:'import',done:`Импортировано: ${pl(totalOf(cols))}`},`Файл «${esc(file.name)}»${j.exportedAt?`, выгружен ${esc(String(j.exportedAt).slice(0,10).split('-').reverse().join('.'))}`:''}.`)})}
+let pendingRep=null;
+function confirmReplace(rep,src){pendingRep=rep;const a=countOf(rep.cols),b=countOf(liveCols());
+ openSheet(`<div style="display:grid;gap:12px">${head(esc(rep.title))}
+ <div class="card tbl-wrap" style="padding:4px 8px"><table><thead><tr><th></th><th>${esc(rep.colA)}</th><th>Сейчас на телефоне</th></tr></thead><tbody>${EXP_ORDER.map(c=>`<tr><td>${COL_RU[c]}</td><td>${a[c]}</td><td>${b[c]}</td></tr>`).join('')}</tbody></table></div>
+ <div class="note">${src}</div><b>Заменить все данные на телефоне?</b>
+ <div class="note">Текущие данные сохранятся в копию на телефоне: их можно вернуть кнопкой «Вернуть данные до замены» в настройках.</div>
+ <div class="two"><button type="button" class="btn primary" data-act="rep-yes">Да</button><button type="button" class="btn" data-act="close">Нет</button></div></div>`)}
+async function doReplace(cols,why){await metaSet('localBackup',{at:Date.now(),why,cols:liveCols(),extra:M.extra||null});
+ const by={};for(const c of EXP_ORDER){const n=cols[c]||{},w=[];
+  for(const [id,d] of LDB.docs[c])if(!d._deleted&&!(id in n))w.push([id,{_deleted:true,_updatedAt:stampNow()}]);
+  for(const [id,d] of Object.entries(n))w.push([id,stamp(d)]);by[c]=w}
+ await LDB.put(by,true)}
+async function repYes(){const r=pendingRep;pendingRep=null;if(!r)return;closeSheet();
+ try{await doReplace(r.cols,r.why);if(r.extra!==undefined)await metaSet('extra',r.extra&&Object.keys(r.extra).length?r.extra:undefined);toast(r.done||'Данные заменены');if(yaOn())syncNow()}
+ catch(e){toast(errMsg(e))}refreshMore()}
+function todayBanners(){let h='';const lb=M.lastBackup,has=S.tx.length||S.patients.length||S.orders.length||S.goals.length||S.workouts.length||S.content.length;
+ if(has&&(!lb||Date.now()-lb.at>7*864e5))h+=`<div class="banner">Сделайте резервную копию: Safari может стереть данные сайта, а копия — единственная страховка.${lb?` Последняя была ${esc(dtL(lb.at))}.`:''} <button type="button" class="linkbtn" data-act="settings">Открыть настройки</button></div>`;
+ if(yaOn())h+=YA.err?`<div class="banner">Яндекс Диск: ${esc(yaStatus())} <button type="button" class="linkbtn" data-act="settings">Настройки</button></div>`:`<div class="meta" style="margin-bottom:-12px">${esc(yaStatus())}</div>`;
+ return h}
+
+/* ---------- Yandex Disk sync (optional, switched on in Settings) ----------
+   Files in the app folder: app:/lifeos/lifeos.json (current state, life-os-export/1 with _updatedAt/_deleted kept)
+   and app:/lifeos/backups/YYYY-MM-DD.json (at most one a day, last 30 kept). One sync = download, merge per
+   document (larger _updatedAt wins), save on the phone, upload — after checking the file was not changed meanwhile.
+   When both sides changed a document since the last sync, the losing version goes to meta.conflicts. */
+const YA_CLIENT_ID='1d6b660814e04c48b1c6f70e06f7856b'; /* ← ClientID приложения с oauth.yandex.ru */
+const YA_API='https://cloud-api.yandex.net/v1/disk',YA_DIR='app:/lifeos',YA_FILE=YA_DIR+'/lifeos.json',YA_BK=YA_DIR+'/backups',YA_KEEP=30,ENC_ITER=310000;
+const YA={busy:false,again:false,err:'',offline:false,t30:0,tRetry:0,key:null,keySalt:'',pass:null,remember:false,dirs:false,remote:null,force:false};
+const yaOn=()=>!!(M.ya&&M.ya.token);
+const yaS=()=>M.yaSync||{};
+const yaSetSync=p=>metaSet('yaSync',{...yaS(),...p});
+/* the token comes back as #access_token=…; read it before anything else and clean the address bar */
+const yaHash=(()=>{if(!/[#&](access_token|error)=/.test(location.hash))return null;const p=new URLSearchParams(location.hash.slice(1));history.replaceState(null,'',location.pathname+location.search);return p})();
+const YA_ERR={auth:'Войдите в Яндекс Диск заново. Данные на телефоне в порядке.',pass:'Файлы на Диске зашифрованы: введите пароль в настройках.',badpass:'Неверный пароль шифрования.',
+ choice:'Выберите в настройках, как объединить данные телефона и Диска.',space:'На Яндекс Диске нет места.',format:'Файл на Диске повреждён или создан не Life OS.',
+ http:'Яндекс Диск не ответил. Повторю позже.',local:'Не удалось сохранить данные на телефоне.',net:'Нет сети.'};
+function yaStatus(){if(!yaOn())return 'Не подключён';if(YA.busy)return 'Синхронизирую…';if(YA.err)return YA_ERR[YA.err]||YA.err;const t=yaS().lastSyncAt;
+ if(YA.offline)return 'Нет сети: синхронизирую, когда она появится.'+(t?` Последняя синхронизация ${dtL(t)}.`:'');
+ return t?'Синхронизировано: '+dtL(t):'Ещё не синхронизировано'}
+function yaUpd(){refreshMore();if(tab==='today'&&S.loaded)schedule()}
+const encP=encodeURIComponent;
+const yaErr=r=>({code:r.status===507?'space':'http',status:r.status});
+async function yaF(path,opt){let r;try{r=await fetch(YA_API+path,{...(opt||{}),headers:{Authorization:'OAuth '+M.ya.token,Accept:'application/json'}})}catch(e){throw {code:'net'}}
+ if(r.status===401)throw {code:'auth'};return r}
+async function yaMeta(p){const r=await yaF('/resources?fields=name,md5,modified,size&path='+encP(p));if(r.status===404)return null;if(!r.ok)throw yaErr(r);return r.json()}
+async function yaRead(p){const r=await yaF('/resources/download?path='+encP(p));if(r.status===404)return null;if(!r.ok)throw yaErr(r);const {href}=await r.json();let f;
+ /* downloader.disk.yandex.ru answers 403 without CORS headers when a Referer is sent */
+ try{f=await fetch(href,{referrerPolicy:'no-referrer'})}catch(e){throw {code:'net'}}if(!f.ok)throw yaErr(f);return f.text()}
+async function yaWrite(p,text){const r=await yaF('/resources/upload?overwrite=true&path='+encP(p));if(!r.ok)throw yaErr(r);const u=await r.json();let f;
+ try{f=await fetch(u.href,{method:u.method||'PUT',body:new Blob([text],{type:'application/json'})})}catch(e){throw {code:'net'}}if(!f.ok)throw yaErr(f)}
+async function yaDirs(){if(YA.dirs)return;for(const p of [YA_DIR,YA_BK]){const r=await yaF('/resources?path='+encP(p),{method:'PUT'});if(!r.ok&&r.status!==409)throw yaErr(r)}YA.dirs=true}
+async function yaList(){const r=await yaF('/resources?limit=1000&sort=name&path='+encP(YA_BK));if(r.status===404)return [];if(!r.ok)throw yaErr(r);
+ return (((await r.json())._embedded||{}).items||[]).filter(i=>/^\d{4}-\d{2}-\d{2}\.json$/.test(i.name)).sort((a,b)=>a.name<b.name?-1:1)}
+async function yaDel(p){const r=await yaF('/resources?path='+encP(p),{method:'DELETE'});if(!r.ok&&r.status!==404)throw yaErr(r)}
+const sameRev=(a,b)=>(!a&&!b)||!!(a&&b&&a.md5===b.md5&&a.modified===b.modified);
+
+/* optional encryption: AES-GCM, key from the password via PBKDF2; the salt lives in the file and in yaSync.enc.
+   The password never goes to the Disk; on this phone only the derived, non-exportable key is kept, and only if asked. */
+const b64e=u=>{let s='';for(let i=0;i<u.length;i+=32768)s+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return btoa(s)};
+const b64d=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function deriveKey(pass,salt,iter){const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pass),'PBKDF2',false,['deriveKey']);
+ return crypto.subtle.deriveKey({name:'PBKDF2',salt:b64d(salt),iterations:iter,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
+async function useKey(key,salt){YA.key=key;YA.keySalt=salt;if(YA.remember)await metaSet('yaKey',{salt,key});YA.pass=null}
+async function yaKey(){const e=yaS().enc;if(!e||!e.on)return null;if(YA.key&&YA.keySalt===e.salt)return YA.key;
+ if(M.yaKey&&M.yaKey.salt===e.salt){YA.key=M.yaKey.key;YA.keySalt=e.salt;return YA.key}
+ if(YA.pass){const k=await deriveKey(YA.pass,e.salt,e.iter);await useKey(k,e.salt);return k}return null}
+async function seal(text){const e=yaS().enc;if(!e||!e.on)return text;const k=await yaKey();if(!k)throw {code:'pass'};
+ const iv=crypto.getRandomValues(new Uint8Array(12)),ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(text)));
+ return JSON.stringify({format:'life-os-encrypted/1',app:'Life OS Аброра',cipher:'AES-GCM-256',kdf:'PBKDF2-SHA256',iter:e.iter,salt:e.salt,iv:b64e(iv),data:b64e(ct)})}
+/* adopt=true (sync): a password typed here for a file another device encrypted switches this phone to that key */
+async function unseal(text,adopt){let j;try{j=JSON.parse(text)}catch(e){throw {code:'format'}}if(!j||j.format!=='life-os-encrypted/1')return j;
+ const e=yaS().enc;let k=e&&e.on&&e.salt===j.salt?await yaKey():null,typed=false;
+ if(!k&&YA.pass){k=await deriveKey(YA.pass,j.salt,j.iter);typed=true}if(!k)throw {code:'pass'};
+ let pt;try{pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64d(j.iv)},k,b64d(j.data))}catch(x){if(typed){YA.pass=null;throw {code:'badpass'}}throw {code:'pass'}}
+ if(typed&&adopt){await yaSetSync({enc:{on:true,salt:j.salt,iter:j.iter}});await useKey(k,j.salt)}
+ try{return JSON.parse(new TextDecoder().decode(pt))}catch(x){throw {code:'format'}}}
+
+/* canonical JSON, so the same document compares equal whatever its key order */
+function stab(v){if(Array.isArray(v))return '['+v.map(stab).join(',')+']';if(v&&typeof v==='object')return '{'+Object.keys(v).sort().filter(k=>v[k]!==undefined).map(k=>JSON.stringify(k)+':'+stab(v[k])).join(',')+'}';const s=JSON.stringify(v);return s===undefined?'null':s}
+function yaMerge(remote){const since=yaS().lastSyncAt||0,rc=(remote&&remote.collections)||{},local={},out={},conf=[];let up=!remote||YA.force;
+ for(const c of EXP_ORDER){const L=LDB.docs[c],R=rc[c]&&typeof rc[c]==='object'&&!Array.isArray(rc[c])?rc[c]:{},o={},w=[];
+  for(const id of new Set([...L.keys(),...Object.keys(R)])){const l=L.get(id),r=R[id];
+   if(!r||typeof r!=='object'){o[id]=l;up=true;continue}
+   if(!l){o[id]=r;w.push([id,r]);continue}
+   const sl=stab(l),sr=stab(r);if(sl===sr){o[id]=l;continue}
+   const lt=+l._updatedAt||0,rt=+r._updatedAt||0,useL=lt>rt||(lt===rt&&sl>sr);
+   o[id]=useL?l:r;if(useL)up=true;else w.push([id,r]);
+   if(lt>since&&rt>since)conf.push({col:c,id,at:Date.now(),kept:useL?'телефон':'Диск',lost:useL?r:l})}
+  out[c]=o;if(w.length)local[c]=w}
+ return {out,local,conf,up}}
+const payloadText=out=>JSON.stringify({format:'life-os-export/1',app:'Life OS Аброра',exportedAt:new Date().toISOString(),timezone:Intl.DateTimeFormat().resolvedOptions().timeZone,counts:countOf(out),collections:out,sync:1});
+async function syncNow(){if(!db||!yaOn())return;if(YA.busy){YA.again=true;return}
+ if(!yaS().linked)return yaFirst();
+ if(yaS().needChoice){YA.err='choice';yaUpd();return}
+ if(!navigator.onLine){YA.offline=true;yaUpd();return}
+ YA.busy=true;YA.err='';clearTimeout(YA.t30);YA.t30=0;yaUpd();
+ try{await yaDirs();let done=false,out=null;
+  for(let i=0;i<4&&!done;i++){
+   const m1=await yaMeta(YA_FILE),remote=m1?await unseal(await yaRead(YA_FILE),true):null;
+   if(remote&&remote.format!=='life-os-export/1')throw {code:'format'};
+   const t0=Date.now(),R=yaMerge(remote);
+   await LDB.put(R.local,false);
+   if(R.conf.length)await metaSet('conflicts',[...(M.conflicts||[]),...R.conf].slice(-200));
+   if(R.up){const m2=await yaMeta(YA_FILE);if(!sameRev(m1,m2))continue; /* changed by another device meanwhile: merge again */
+    await yaWrite(YA_FILE,await seal(payloadText(R.out)));YA.force=false}
+   await yaSetSync({lastSyncAt:t0});out=R.out;done=true}
+  if(!done)throw {code:'http'};
+  await yaDaily(out);YA.offline=false}
+ catch(e){yaFail(e)}
+ finally{YA.busy=false;yaUpd();if(YA.again){YA.again=false;setTimeout(syncNow,0)}}}
+async function yaDaily(out){const d=today();if(yaS().lastDaily===d)return;
+ await yaWrite(`${YA_BK}/${d}.json`,await seal(payloadText(out)));await yaSetSync({lastDaily:d});await metaSet('lastBackup',{at:Date.now(),where:'disk'});
+ const items=await yaList();for(const it of items.slice(0,Math.max(0,items.length-YA_KEEP)))await yaDel(`${YA_BK}/${it.name}`)}
+function yaFail(e){const c=(e&&e.code)||'http';console.warn('sync',e);
+ if(c==='net'){YA.offline=true;YA.err='';yaRetry()}else if(c==='quota_exceeded')YA.err='local';else{YA.err=YA_ERR[c]?c:'http';if(YA.err==='http')yaRetry()}}
+function yaRetry(){clearTimeout(YA.tRetry);YA.tRetry=setTimeout(()=>{if(document.visibilityState==='visible')syncNow()},120000)}
+function onLocalChange(){if(!yaOn())return;clearTimeout(YA.t30);YA.t30=setTimeout(syncNow,30000)}
+async function yaConnect(){const st=newId();await metaSet('yaState',st);
+ location.href='https://oauth.yandex.ru/authorize?'+new URLSearchParams({response_type:'token',client_id:YA_CLIENT_ID,redirect_uri:new URL('./',location.href).href,state:st})}
+async function yaAfterOpen(){if(yaHash){const tok=yaHash.get('access_token'),st=yaHash.get('state'),er=yaHash.get('error');
+  if(er)toast(er==='access_denied'?'Вход в Яндекс отменён':'Яндекс не дал доступ: '+er);
+  else if(tok&&st&&st===M.yaState){const ex=+yaHash.get('expires_in')||0;await metaSet('ya',{token:tok,exp:ex?Date.now()+ex*1000:0,at:Date.now()});await metaSet('yaState',undefined);YA.err='';toast('Яндекс Диск подключён')}
+  else toast('Ответ Яндекса не прошёл проверку. Войдите ещё раз')}
+ if(yaOn())syncNow()}
+/* first connection: if both the Disk and the phone have data, nothing happens until the choice is made */
+const liveTotal=cols=>Object.values(cols||{}).reduce((a,m)=>a+Object.values(m||{}).filter(d=>d&&!d._deleted).length,0);
+async function yaFirst(){if(YA.busy)return;YA.busy=true;YA.err='';yaUpd();
+ try{await yaDirs();const m=await yaMeta(YA_FILE),remote=m?await unseal(await yaRead(YA_FILE),true):null;
+  if(remote&&remote.format!=='life-os-export/1')throw {code:'format'};
+  YA.remote=remote;YA.rn=remote?liveTotal(remote.collections):0;YA.ln=liveTotal(liveCols());
+  if(YA.rn&&YA.ln){await yaSetSync({linked:true,needChoice:true});YA.busy=false;YA.err='choice';yaUpd();openChoice();return}
+  await yaSetSync({linked:true,needChoice:false});YA.busy=false;yaUpd();syncNow()}
+ catch(e){YA.busy=false;yaFail(e);yaUpd()}}
+function openChoice(){openSheet(`<div style="display:grid;gap:12px">${head('Данные есть и на Диске, и на телефоне')}
+ <div class="note">На Яндекс Диске ${pl(YA.rn)}, на телефоне ${pl(YA.ln)}. Пока вы не выберете, синхронизация ждёт и ничего не меняет.</div>
+ <button type="button" class="btn primary" data-act="ya-pick" data-v="merge">Объединить</button><div class="note">Сохранятся записи с обеих сторон. Если одна запись менялась в обоих местах, останется более новая версия.</div>
+ <button type="button" class="btn wide" data-act="ya-pick" data-v="disk">Взять с Диска</button><div class="note">Данные на телефоне заменятся данными с Диска. Текущие сохранятся в копию на телефоне.</div>
+ <button type="button" class="btn wide" data-act="ya-pick" data-v="phone">Взять с телефона</button><div class="note">На Диске останутся только данные с этого телефона.</div></div>`)}
+async function yaPick(v){const remote=YA.remote;closeSheet();if(!remote&&v!=='merge')return;
+ try{if(v==='disk'){await metaSet('localBackup',{at:Date.now(),why:'disk',cols:liveCols(),extra:M.extra||null});const by={};
+   for(const c of EXP_ORDER){const R=(remote.collections||{})[c]||{},w=[];for(const [id,d] of LDB.docs[c])if(!d._deleted&&!(id in R))w.push([id,{_deleted:true,_updatedAt:stampNow()}]);
+    for(const [id,d] of Object.entries(R))if(d&&typeof d==='object')w.push([id,d]);by[c]=w}
+   await LDB.put(by,false)}
+  else if(v==='phone'){const by={};for(const c of EXP_ORDER){const R=(remote.collections||{})[c]||{},w=[];
+    for(const [id,d] of LDB.docs[c])if(!d._deleted)w.push([id,stamp(d)]);
+    for(const id of Object.keys(R))if(!LDB.docs[c].has(id))w.push([id,{_deleted:true,_updatedAt:stampNow()}]);by[c]=w}
+   await LDB.put(by,false);YA.force=true}
+  YA.remote=null;await yaSetSync({needChoice:false});YA.err='';syncNow()}
+ catch(e){toast(errMsg(e))}}
+async function yaOff(){clearTimeout(YA.t30);clearTimeout(YA.tRetry);await metaSet('ya',undefined);await metaSet('yaKey',undefined);
+ Object.assign(YA,{key:null,keySalt:'',pass:null,err:'',offline:false,dirs:false,remote:null});await yaSetSync({linked:false,needChoice:false,lastDaily:''});
+ toast('Яндекс Диск отключён. Данные на телефоне и на Диске остались');refreshMore();render()}
+async function yaEncOn(){const p1=($('#ya-p1')||{}).value||'',p2=($('#ya-p2')||{}).value||'';
+ if(p1.length<6){toast('Пароль — хотя бы 6 символов');return}if(p1!==p2){toast('Пароли не совпадают');return}
+ const salt=b64e(crypto.getRandomValues(new Uint8Array(16)));YA.remember=!!($('#ya-rem')||{}).checked;
+ await useKey(await deriveKey(p1,salt,ENC_ITER),salt);if(!YA.remember)await metaSet('yaKey',undefined);
+ await yaSetSync({enc:{on:true,salt,iter:ENC_ITER},lastDaily:''});YA.force=true;toast('Шифрование включено');refreshMore();syncNow()}
+async function yaEncOff(){await metaSet('yaKey',undefined);Object.assign(YA,{key:null,keySalt:'',force:true});await yaSetSync({enc:{on:false},lastDaily:''});toast('Шифрование выключено');refreshMore();syncNow()}
+async function yaEncOld(){try{const items=await yaList();let n=0;
+  for(const it of items){const p=`${YA_BK}/${it.name}`,t=await yaRead(p);let j=null;try{j=JSON.parse(t)}catch(e){}if(!j||j.format==='life-os-encrypted/1')continue;await yaWrite(p,await seal(t));n++}
+  toast(n?`Зашифровано копий: ${n}`:'Все копии уже зашифрованы')}catch(e){yaFail(e);toast(YA_ERR[YA.err]||'Нет сети')}yaUpd()}
+async function yaShowBk(){const box=$('#ya-bk');if(box)box.innerHTML='<div class="note">Загружаю список…</div>';
+ try{const a=(await yaList()).reverse(),b=$('#ya-bk');if(!b)return;
+  b.innerHTML=a.length?`<div class="list">${a.map(i=>`<div class="item"><div class="grow"><div class="t">${dmyy(i.name.slice(0,10))}</div><div class="meta">${nf0.format(Math.max(1,Math.round((i.size||0)/1024)))} КБ</div></div><button type="button" class="btn sm" data-act="ya-restore" data-v="${esc(i.name)}">Восстановить</button></div>`).join('')}</div>`:'<div class="note">Копий пока нет: первая появится после синхронизации.</div>'}
+ catch(e){yaFail(e);const b=$('#ya-bk');if(b)b.innerHTML=`<div class="note">${esc(YA_ERR[YA.err]||YA_ERR.net)}</div>`}}
+async function yaRestore(name){const d=dmyy(name.slice(0,10));toast('Скачиваю копию…');
+ try{const j=await unseal(await yaRead(`${YA_BK}/${name}`),false);if(!j||j.format!=='life-os-export/1')throw {code:'format'};
+  confirmReplace({title:'Восстановить копию от '+d,colA:'В копии',cols:normCols(j.collections),why:'restore',done:'Данные восстановлены из копии от '+d},'Все данные на телефоне заменятся данными этой копии, затем изменения уйдут на Диск и на другие устройства.')}
+ catch(e){const c=e&&e.code;if(c==='pass'||c==='badpass'){YA.err=c;refreshMore()}toast(YA_ERR[c]||'Не удалось открыть копию')}}
+function moreHTML(){const lb=M.lastBackup,lc=M.localBackup,s=yaS(),enc=!!(s.enc&&s.enc.on),on=yaOn(),nc=(M.conflicts||[]).length,pw=YA.err==='pass'||YA.err==='badpass';
+ return `<h2>Резервная копия</h2>
+ <div class="two"><button type="button" class="btn" data-act="exp">Экспорт</button><button type="button" class="btn" data-act="imp">Импорт</button></div>
+ <input type="file" id="imp-file" accept=".json,application/json" hidden>
+ <div class="note">Последняя резервная копия: ${lb?esc(dtL(lb.at))+(lb.where==='disk'?' (Яндекс Диск)':''):'ещё не было'}. Экспорт сохраняет все данные в один файл: держите его в «Файлах» или на компьютере.</div>
+ ${lc?`<button type="button" class="btn sm" style="justify-self:start" data-act="undo-rep">Вернуть данные до замены (${esc(dtL(lc.at))})</button>`:''}
+ <h2 style="margin-top:8px">Яндекс Диск</h2>
+ ${!on?`<div class="note">Каждый день копия на Диске и одни и те же данные на iPhone и компьютере. Life OS получит доступ только к своей папке на Диске.</div><button type="button" class="btn wide" data-act="ya-connect">Подключить Яндекс Диск</button>`
+ :`<div id="ya-st" class="${YA.err?'banner':'note'}">${esc(yaStatus())}</div>
+ ${YA.err==='choice'?'<button type="button" class="btn primary" data-act="ya-choice">Выбрать, как объединить</button>':''}
+ ${YA.err==='auth'?'<button type="button" class="btn primary" data-act="ya-connect">Войти в Яндекс Диск заново</button>':''}
+ ${pw?`<label class="f">Пароль шифрования<input id="ya-pw" type="password" autocomplete="current-password"></label><label class="cb"><input type="checkbox" id="ya-pw-rem"> Запомнить на этом устройстве</label><button type="button" class="btn primary" data-act="ya-pw-go">Ввести пароль</button>`:''}
+ <div class="two"><button type="button" class="btn" data-act="ya-sync">Синхронизировать сейчас</button><button type="button" class="btn danger" data-act="ya-off">Отключить</button></div>
+ <label class="cb"><input type="checkbox" id="ya-enc"${enc?' checked':''}> Шифровать паролем</label><div id="ya-enc-form" style="display:grid;gap:10px"></div>
+ ${enc?'<button type="button" class="btn sm" style="justify-self:start" data-act="ya-enc-old">Зашифровать старые копии на Диске</button>':''}
+ <button type="button" class="btn sm" style="justify-self:start" data-act="ya-list">Копии на Диске</button><div id="ya-bk"></div>
+ ${nc?`<div class="note">Записи, изменённые и здесь, и на другом устройстве: осталась более новая версия, старые сохранены (${nc}). <button type="button" class="linkbtn" data-act="ya-conf">Скачать</button></div>`:''}`}`}
+/* keep what is being typed: while a field in the box has focus, only the status line changes */
+function refreshMore(){const m=$('#more');if(!m)return;const a=document.activeElement;
+ if(a&&m.contains(a)&&a.tagName==='INPUT'&&a.type!=='checkbox'){const st=$('#ya-st');if(st)st.textContent=yaStatus();return}m.innerHTML=moreHTML()}
+async function afterOpen(){if(!M.persistAsked&&navigator.storage&&navigator.storage.persist){try{await metaSet('persistAsked',{at:Date.now(),granted:await navigator.storage.persist()})}catch(e){}}
+ yaAfterOpen();schedule()}
+
+/* ---------- actions ---------- */
+function toast(t){const e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,2200)}
+function arm(key,fn){if(armed===key){armed=null;clearTimeout(armTimer);fn()}else{armed=key;clearTimeout(armTimer);armTimer=setTimeout(()=>{armed=null;render()},3000)}render()}
+const ACT={
+ close:()=>closeSheet(), settings:()=>settingsForm(), drill:d=>openDrill(d),'drill-back':()=>drillBack(),
+ 'pat-new':()=>patForm(),'pat-edit':d=>patForm(S.patients.find(p=>p.id===d.id)),'pat-pay':d=>patPayForm(d.id),
+ 'pat-f':d=>{patF=d.f;render()},
+ 'pp-edit':d=>patPayForm(d.id,d.w),
+ 'op-mode':(d,b)=>{opMode=d.m;document.querySelectorAll('[data-act="op-mode"]').forEach(x=>x.classList.toggle('sel',x===b));updOpen()},
+ 'pp-mode':(d,b)=>{const c=patPayForm.ctx;if(!c)return;c.mode=d.m;document.querySelectorAll('[data-act="pp-mode"]').forEach(x=>x.classList.toggle('sel',x===b));updPatPay()},
+ 'vis-done':d=>visitDone(d.id),'vis-edit':d=>visitForm(d.id),'vis-bulk':()=>bulkVisits(),'ics-share':d=>shareIcs(String(d.v||'').split(',').filter(Boolean)),
+ 'vis-all':()=>{visAll=!visAll;render()},
+ 'vis-clear':d=>{setVisit(d.id,{date:''},null);closeSheet();setTimeout(()=>openDrill({k:'pat',v:d.id}),0)},
+ 'v-plus':d=>{const i=$('#v-d');if(i)i.value=d.n==='m1'?addMonths(today(),1):addDays(today(),+d.n)},
+ 'pat-del':d=>arm(d.key,()=>{const p=S.patients.find(z=>z.id===d.id),cal=p&&p.visit&&p.visit.date>=today();delDoc('patients',d.id);closeSheet();toast('Пациент удалён. Его оплаты с начала учёта остались в «Деньгах»'+(cal?'. Визит в Календаре удалите вручную':''))}),
+ 'pat-hdel':d=>arm(d.key,()=>{const[pid,i]=d.id.split('|'),p=S.patients.find(z=>z.id===pid);if(!p)return;const h=[...(p.history||[])];h.splice(+i,1);updDoc('patients',pid,{history:h})}),
+ mon:d=>{const[y,m]=month.split('-').map(Number),x=new Date(y,m-1+(+d.d),1);month=x.getFullYear()+'-'+pad(x.getMonth()+1);render()},
+ tpl:d=>{const p=cfg().templates[+d.i];if(p)txForm(p)},
+ 'tx-new':d=>txForm({type:d.type}),
+ 'tx-paid':d=>payForm('tx',d.id),
+ 'pay-fill':d=>{const a=$('#p-amt');if(a){a.value=d.v;updPay()}},
+ 'tx-del':d=>arm(d.key,()=>{const x=S.tx.find(z=>z.id===d.id),o=x&&x.orderId&&S.orders.find(z=>z.id===x.orderId);delDoc('tx',d.id);
+  if(o&&o.status==='paid'&&ordTx(o.id).length<=1){updDoc('orders',o.id,{status:'done',at_paid:null});toast(`Оплата удалена, заказ «${o.client}» снова ждёт оплату`)}}),
+ habit:d=>{const t=today(),cur=S.days[t]||{},h={...(cur.habits||{})};h[d.id]=!h[d.id];setDoc('days',t,{...cur,habits:h});if(h[d.id])toast('+10 XP')},
+ goal:d=>{const g=S.goals.find(x=>x.id===d.id);if(!g)return;updDoc('goals',g.id,{done:!g.done,doneAt:g.done?null:today()});if(!g.done)toast('+'+(+g.xp||40)+' XP')},
+ 'goal-new':()=>goalForm(),
+ 'ord-new':()=>orderForm(),
+ 'ord-next':d=>advanceOrder(d.id),'ord-paid':d=>payForm('order',d.id),
+ 'ord-del':d=>arm(d.key,()=>{const t=ordTx(d.id);for(const x of t)delDoc('tx',x.id);delDoc('orders',d.id);
+  toast(t.length?`Заказ удалён вместе с оплатой ${t.map(x=>fmt(x.amount,x.cur)).join(', ')}`:'Заказ удалён')}),
+ 'wo-new':d=>woForm(d.plan),'wo-del':d=>arm(d.key,()=>delDoc('workouts',d.id)),
+ 'ct-new':()=>contentForm(),'ct-del':d=>arm(d.key,()=>delDoc('content',d.id)),
+ 'ct-next':d=>{const x=S.content.find(z=>z.id===d.id);if(!x)return;const i=CONTENT_ST.findIndex(s=>s[0]===x.status),nx=CONTENT_ST[i+1];if(!nx)return;const p={status:nx[0]};if(nx[0]==='pub'){p.pubDate=today();toast('+'+(CONTENT_XP[x.ch]||25)+' XP')}updDoc('content',x.id,p)}};
+function advanceOrder(id){const o=S.orders.find(x=>x.id===id);if(!o)return;const i=ORDER_ST.findIndex(s=>s[0]===o.status),nx=(ORDER_ST[i+1]||[])[0];if(!nx)return;
+ if(nx==='paid'){payForm('order',id);return}
+ updDoc('orders',id,{status:nx,['at_'+nx]:today()})}
+const SUBMIT={
+ tx:(f)=>{const amount=parseAmt(f.amount);if(!amount){toast('Введите сумму');return false}
+  const d={date:f.date||today(),type:f.type,amount,cur:f.cur||'UZS',note:(f.note||'').trim(),createdAt:Date.now()};
+  if(f.type==='in'){Object.assign(d,{channel:f.channel,service:f.service,party:(f.party||'').trim(),paid:true});
+   if(f.pay==='none')Object.assign(d,{paid:false,payments:[]});
+   else if(f.pay==='part'){const got=parseAmt(f.got);if(!got){toast('Впишите, сколько получено сейчас');return false}
+    if(got<amount)Object.assign(d,{paid:false,payments:[{date:d.date,amount:got}]})}}
+  else Object.assign(d,{cat:f.cat,paid:true});
+  addDoc('tx',d);toast(d.paid===false?(recv(d)?`Записано, остаток ${fmt(rest(d),d.cur)} в долгах · +5 XP`:'Записано в долги · +5 XP'):'Записано · +5 XP')},
+ pat:(f)=>{const name=(f.name||'').trim(),total=parseAmt(f.total);if(!name){toast('Впишите ФИО');return false}if(!total){toast('Впишите сумму лечения');return false}
+  const d={name,phone:(f.phone||'').trim(),service:f.service,start:f.start||'',total,cur:f.cur||'UZS',note:(f.note||'').trim(),
+   lab:parseAmt(f.lab)||0,ref:(f.ref||'').trim(),refMode:f.refMode||'pctNet',refVal:parseAmt(f.refVal)||0};
+  if(d.lab+calcRef(total,d.lab,d.refMode,d.refVal)>total){toast('Техничка и доля врача больше итоговой суммы. Проверьте цифры');return false}
+  if(f.id){updDoc('patients',f.id,d);toast('Сохранено');setTimeout(()=>openDrill({k:'pat',v:f.id}),0);
+   return}
+  const op=parseAmt(f.opening),oLab=parseAmt(f.openLab)||0,oRef=parseAmt(f.openRef)||0;
+  if(op&&oLab+oRef>op){toast('Техничке и врачу вышло больше, чем уже оплачено. Проверьте цифры');return false}
+  d.history=op?[{date:f.openingDate||'',amount:op,note:'',lab:oLab,ref:oRef}]:[];d.createdAt=Date.now();
+  const nid='p'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),vd=f.visitDate||'';
+  d.every=+f.every||0;d.visit={date:vd,time:'',eventId:''};d.visits=[];
+  setDoc('patients',nid,d);toast(op?`Пациент добавлен, остаток ${fmt(Math.max(0,r2(total-op)),d.cur)}`:'Пациент добавлен');
+  if(vd){toast('Пациент добавлен, визит '+visitLabel(d.visit)+'. Добавьте его в календарь кнопкой в карточке');setTimeout(()=>openDrill({k:'pat',v:nid}),0)}},
+ visit:(f)=>{const ev=+f.every;setVisit(f.id,{date:f.date||'',time:f.time||''},ev);setTimeout(()=>openDrill({k:'pat',v:f.id}),0)},
+ patpay:(f)=>{const p=S.patients.find(z=>z.id===f.id);if(!p)return;const amt=parseAmt(f.amount);if(!amt){toast('Впишите сумму');return false}
+  const date=f.date||'',note=(f.note||'').trim(),lab=parseAmt(f.lab)||0,ref=parseAmt(f.ref)||0,mine=r2(amt-lab-ref);
+  if(mine<0){toast('Техничке и врачу вышло больше, чем сама оплата. Проверьте цифры');return false}
+  const parts=lab||ref?`: техничке ${fmt(lab,p.cur)}, врачу ${fmt(ref,p.cur)}, мне ${fmt(mine,p.cur)}`:'';
+  const old=!date||date<patFrom(),entry={date,amount:amt,note,lab,ref};
+  const txData={date,type:'in',amount:mine,gross:amt,lab,ref,cur:p.cur||'UZS',channel:patCh(),service:p.service||'Прочее',party:p.name,patientId:p.id,paid:true,note:note||'Оплата пациента'};
+  const w=f.w||'',wk=w[0],wv=w.slice(2),hist=[...(p.history||[])];
+  if(wk==='h'){const i=+wv;if(old){hist[i]=entry;updDoc('patients',p.id,{history:hist})}else{hist.splice(i,1);updDoc('patients',p.id,{history:hist});addDoc('tx',{...txData,createdAt:Date.now()})}toast('Оплата изменена'+parts)}
+  else if(wk==='t'){if(old){delDoc('tx',wv);updDoc('patients',p.id,{history:[...hist,entry]})}else updDoc('tx',wv,txData);toast('Оплата изменена'+parts)}
+  else if(old){updDoc('patients',p.id,{history:[...hist,entry]});toast('Сохранено в карточке пациента'+parts)}
+  else{addDoc('tx',{...txData,createdAt:Date.now()});toast('Записано'+(parts||'')+' · +5 XP')}
+  setTimeout(()=>openDrill({k:'pat',v:p.id}),0)},
+ pay:(f)=>{let amt=parseAmt(f.amount);if(!amt){toast('Впишите сумму оплаты');return false}const date=f.date||today();
+  if(f.kind==='tx'){const x=S.tx.find(z=>z.id===f.id);if(!x)return;const left=rest(x);if(amt>left)amt=left;const full=r2(left-amt)<=0;
+   updDoc('tx',x.id,{payments:[...(x.payments||[]),{date,amount:amt}],paid:full,paidDate:full?date:null});
+   toast(full?'Долг закрыт полностью':`Записано. Остаток ${fmt(r2(left-amt),x.cur)}`)}
+  else{const o=S.orders.find(z=>z.id===f.id);if(!o)return;const price=+o.price||0;if(amt>price)amt=price;const full=r2(price-amt)<=0;
+   updDoc('orders',o.id,{status:'paid',at_paid:date});
+   const t={date,type:'in',amount:price,cur:o.cur||'USD',channel:o.channel||'Работы для врачей',service:o.service||'Прочее',party:o.client||'',paid:full,orderId:o.id,note:'Заказ',createdAt:Date.now()};
+   if(!full)Object.assign(t,{payments:[{date,amount:amt}]});else t.paidDate=date;
+   addDoc('tx',t);toast(full?'Оплата записана в «Деньги» · +15 XP':`Записано. Остаток ${fmt(r2(price-amt),o.cur)} в долгах · +15 XP`)}},
+ order:(f)=>{const price=parseAmt(f.price);if(!price){toast('Введите цену');return false}
+  addDoc('orders',{client:f.client.trim(),service:f.service,channel:f.channel,price,cur:f.cur||'USD',due:f.due||'',note:(f.note||'').trim(),status:'new',date:today(),at_new:today(),createdAt:Date.now()});toast('Заказ создан · +10 XP')},
+ goal:(f)=>{addDoc('goals',{title:f.title.trim(),area:f.area,phase:+f.phase,xp:+f.xp,done:false,order:Date.now()});toast('Цель добавлена')},
+ content:(f)=>{addDoc('content',{title:f.title.trim(),ch:f.ch,note:(f.note||'').trim(),status:'idea',createdAt:Date.now()});toast('Идея добавлена')},
+ wo:(f)=>{const P=PROGRAM[f.plan],items=P.ex.map(e=>({id:e.id,reps:Array.from({length:e.sets},(_,i)=>parseInt(f[`r_${e.id}_${i}`],10)).filter(n=>n>0)})).filter(i=>i.reps.length);
+  if(!items.length){toast('Впишите хотя бы один подход');return false}const prev=pullMax(),best=Math.max(0,...items.filter(i=>i.id==='pull'||i.id==='chin').flatMap(i=>i.reps));
+  addDoc('workouts',{date:f.date||today(),plan:f.plan,items,note:(f.note||'').trim(),createdAt:Date.now()});toast(best>prev&&prev>0?`Рекорд: ${best}! · +30 XP`:'Тренировка записана · +30 XP')},
+ settings:(f)=>{const lines=s=>String(s||'').split('\n').map(x=>x.trim()).filter(Boolean);const c=cfg();
+  const routine=lines(f.routine).map(l=>{const[t,n,d]=l.split('|').map(x=>(x||'').trim());return{t:t||'',n:n||'',d:(d||'1234567').replace(/[^1-7]/g,'')||'1234567'}}).filter(r=>r.n);
+  setDoc('settings','main',{...strip(c),rate:parseAmt(f.rate)||DEF.rate,incomeGoal:parseAmt(f.incomeGoal)||0,start:f.start||c.start,patientsFrom:f.patientsFrom||c.patientsFrom,
+   habits:lines(f.habits).map(n=>({id:(c.habits.find(h=>h.n===n)||{}).id||hid(n),n})),routine,channels:lines(f.channels),services:lines(f.services),expCats:lines(f.expCats),bizCats:lines(f.bizCats)});toast('Сохранено')}};
+document.addEventListener('click',e=>{if(e.target===$('#wrap')){closeSheet();return}
+ const t=e.target.closest('[data-tab]');if(t){tab=t.dataset.tab;store('los.tab',tab);render();window.scrollTo(0,0);return}
+ const b=e.target.closest('[data-act]');if(b&&ACT[b.dataset.act])ACT[b.dataset.act](b.dataset,b)});
+document.addEventListener('submit',e=>{const f=e.target.closest('form[data-form]');if(!f)return;e.preventDefault();const fd=Object.fromEntries(new FormData(f));if(SUBMIT[f.dataset.form](fd)!==false)closeSheet()});
+document.addEventListener('input',e=>{const id=e.target.id;if(id==='f-amt'||id==='f-got')updPrev();if(id==='f-amt'||id==='pt-lab'||id==='pt-rv')updSplit();if(id==='pt-o'||id==='f-amt'||id==='pt-lab'||id==='pt-rv')updOpen();
+ if(id==='op-lab'||id==='op-ref'){opMode='manual';document.querySelectorAll('[data-act="op-mode"]').forEach(b=>b.classList.remove('sel'));updOpen()}if(id==='p-amt')updPay();if(id==='pp-a'||id==='pp-d')updPatPay();
+ if((id==='pp-lab'||id==='pp-ref')&&patPayForm.ctx){patPayForm.ctx.mode='manual';document.querySelectorAll('[data-act="pp-mode"]').forEach(b=>b.classList.remove('sel'));updPatPay()}
+ if(id==='pat-q'){patQ=e.target.value.trim();const q=patQ.toLowerCase();document.querySelectorAll('tr[data-name]').forEach(tr=>{tr.hidden=!!q&&!tr.dataset.name.includes(q)})}});
+document.addEventListener('change',e=>{if(e.target.name==='cur'||e.target.name==='pay')updPrev();if(e.target.id==='pp-d')updPatPay();if(e.target.name==='refMode'||e.target.name==='cur'){updSplit();updOpen()}if(e.target.id==='pt-ref')prefillRef()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#wrap').hidden)closeSheet()});
+/* ---------- web-app wiring: backup and Yandex Disk buttons, sync triggers, offline cache ---------- */
+Object.assign(ACT,{exp:()=>doExport(),imp:()=>{const i=$('#imp-file');if(i)i.click()},'rep-yes':()=>repYes(),
+ 'undo-rep':()=>{const l=M.localBackup;if(l)confirmReplace({title:'Вернуть данные до замены',colA:'В копии',cols:l.cols,extra:l.extra,why:'undo',done:'Данные возвращены'},`Копия от ${esc(dtL(l.at))}, сделана перед заменой данных.`)},
+ 'ya-connect':()=>yaConnect(),'ya-sync':()=>{if(YA.err!=='choice')YA.err='';syncNow()},'ya-off':()=>yaOff(),'ya-choice':()=>yaFirst(),'ya-pick':d=>yaPick(d.v),
+ 'ya-pw-go':()=>{const p=($('#ya-pw')||{}).value||'';if(!p){toast('Введите пароль');return}YA.pass=p;YA.remember=!!($('#ya-pw-rem')||{}).checked;YA.err='';syncNow()},
+ 'ya-enc-on':()=>yaEncOn(),'ya-enc-off':()=>yaEncOff(),'ya-enc-old':()=>yaEncOld(),'ya-list':()=>yaShowBk(),'ya-restore':d=>yaRestore(d.v),
+ 'ya-conf':()=>saveFile(new File([JSON.stringify(M.conflicts||[],null,1)],'life-os-conflicts.json',{type:'application/json'}))});
+document.addEventListener('change',e=>{const id=e.target.id;
+ if(id==='imp-file'){const f=e.target.files&&e.target.files[0];e.target.value='';if(f)readImport(f)}
+ if(id==='ya-enc'){const box=$('#ya-enc-form'),on=!!(yaS().enc&&yaS().enc.on);if(!box)return;
+  box.innerHTML=e.target.checked&&!on?`<div class="banner">Если забыть пароль, копии на Диске не открыть: восстановить пароль нельзя. Запишите его в надёжном месте.</div><label class="f">Пароль<input id="ya-p1" type="password" autocomplete="new-password"></label><label class="f">Ещё раз<input id="ya-p2" type="password" autocomplete="new-password"></label><label class="cb"><input type="checkbox" id="ya-rem"> Запомнить на этом устройстве</label><button type="button" class="btn primary" data-act="ya-enc-on">Включить шифрование</button>`
+  :!e.target.checked&&on?'<div class="note">Следующие файлы на Диске будут без пароля. Уже зашифрованные копии останутся зашифрованными.</div><button type="button" class="btn primary" data-act="ya-enc-off">Выключить шифрование</button>':''}});
+document.addEventListener('visibilitychange',()=>{if(!yaOn())return;if(document.visibilityState==='visible')syncNow();else if(YA.t30)syncNow()});
+addEventListener('online',()=>{YA.offline=false;syncNow()});
+addEventListener('offline',()=>{YA.offline=true;yaUpd()});
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))navigator.serviceWorker.register('sw.js').catch(e=>console.warn(e));
+render();
+</script>
+
+</body></html>
