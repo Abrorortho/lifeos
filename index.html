@@ -986,7 +986,10 @@ async function syncNow(){if(!db||!yaOn())return;if(YA.busy){YA.again=true;return
    await LDB.put(R.local,false);
    if(R.conf.length)await metaSet('conflicts',[...(M.conflicts||[]),...R.conf].slice(-200));
    if(R.up){const m2=await yaMeta(YA_FILE);if(!sameRev(m1,m2))continue; /* changed by another device meanwhile: merge again */
-    await yaWrite(YA_FILE,await seal(payloadText(R.out)));YA.force=false}
+    await yaWrite(YA_FILE,await seal(payloadText(R.out)));YA.force=false;
+    /* the Disk applies uploads with a delay, so two phones can still overwrite each other: check again shortly;
+       a change that lost this race is still on its phone with the newer stamp and gets uploaded then */
+    clearTimeout(YA.tCheck);YA.tCheck=setTimeout(()=>{if(yaOn())syncNow()},20000)}
    await yaSetSync({lastSyncAt:t0});out=R.out;done=true}
   if(!done)throw {code:'http'};
   await yaDaily(out);YA.offline=false}
@@ -1031,7 +1034,7 @@ async function yaPick(v){const remote=YA.remote;closeSheet();if(!remote&&v!=='me
    await LDB.put(by,false);YA.force=true}
   YA.remote=null;await yaSetSync({needChoice:false});YA.err='';syncNow()}
  catch(e){toast(errMsg(e))}}
-async function yaOff(){clearTimeout(YA.t30);clearTimeout(YA.tRetry);await metaSet('ya',undefined);await metaSet('yaKey',undefined);
+async function yaOff(){clearTimeout(YA.t30);clearTimeout(YA.tRetry);clearTimeout(YA.tCheck);await metaSet('ya',undefined);await metaSet('yaKey',undefined);
  Object.assign(YA,{key:null,keySalt:'',pass:null,err:'',offline:false,dirs:false,remote:null});await yaSetSync({linked:false,needChoice:false,lastDaily:''});
  toast('Яндекс Диск отключён. Данные на телефоне и на Диске остались');refreshMore();render()}
 async function yaEncOn(){const p1=($('#ya-p1')||{}).value||'',p2=($('#ya-p2')||{}).value||'';
