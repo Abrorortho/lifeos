@@ -38,7 +38,7 @@ const log = (msg, cls) => { const d = document.createElement('div'); if (cls) d.
 
 $('mode').textContent = (navigator.standalone || matchMedia('(display-mode: standalone)').matches) ? 'на экране «Домой»' : 'Safari / браузер';
 $('here').textContent = location.origin + location.pathname;
-$('cid').value = localStorage.getItem('probe_cid') || '';
+$('cid').value = localStorage.getItem('probe_cid') || '1d6b660814e04c48b1c6f70e06f7856b';
 
 // Implicit flow: token comes back in #access_token=...
 const h = new URLSearchParams(location.hash.slice(1));
@@ -82,8 +82,9 @@ $('run').onclick = async () => {
   const payload = JSON.stringify({ probe: true, at: new Date().toISOString(), text: 'Проверка кириллицы ✓🦷' });
   let up, down, meta1;
 
-  await step('1. Диск: GET /disk (токен работает)', async () => {
-    const r = await fetch(API + '/', { headers: auth() });
+  // GET /disk needs cloud_api:disk.info; with app_folder only we check the app folder itself.
+  await step('1. Токен работает (GET app:/)', async () => {
+    const r = await fetch(API + '/resources?path=' + encodeURIComponent('app:/'), { headers: auth() });
     if (r.status === 401) throw new Error('401 — токен недействителен');
     if (!r.ok) throw new Error('HTTP ' + r.status);
     return 'HTTP ' + r.status;
@@ -107,7 +108,8 @@ $('run').onclick = async () => {
     return new URL(down.href).host;
   });
   if (down) await step('7. GET файла по адресу скачивания (вторая проверка CORS, с редиректами)', async () => {
-    const r = await fetch(down.href);
+    // downloader.disk.yandex.ru answers 403 without CORS headers when a Referer is sent
+    const r = await fetch(down.href, { referrerPolicy: 'no-referrer' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const t = await r.text();
     if (t !== payload) throw new Error('содержимое не совпало: ' + t.slice(0, 80));
