@@ -3,12 +3,12 @@
    internet and picks up a new version on the next launch. Google Fonts: cached on first use; until then
    (or without network) the CSS falls back to system fonts. Everything else — Yandex Disk API included —
    goes straight to the network and is never cached. Bump VERSION when the list of app files changes. */
-const VERSION = 'lifeos-v1';
+const VERSION = 'lifeos-v2';
 const APP = ['./', 'index.html', 'manifest.webmanifest', 'icon-180.png', 'icon-512.png'];
 const FONTS = /^https:\/\/fonts\.(googleapis|gstatic)\.com\//;
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(VERSION).then(c => c.addAll(APP)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(VERSION).then(c => c.addAll(APP.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {
@@ -38,7 +38,8 @@ self.addEventListener('fetch', e => {
   e.respondWith(caches.open(VERSION).then(async c => {
     // navigations (with ?query or #token) all map to the cached app page
     const hit = isPage ? (await c.match('./')) || (await c.match('index.html')) : await c.match(req, { ignoreSearch: true });
-    const net = fetch(req).then(res => {
+    // no-cache: revalidate with GitHub Pages instead of reusing its 10-minute HTTP cache
+    const net = fetch(isPage ? './' : req.url, { cache: 'no-cache' }).then(res => {
       if (res.ok) c.put(isPage ? './' : req, res.clone());
       return res;
     }).catch(() => null);
